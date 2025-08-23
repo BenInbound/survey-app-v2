@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { getAllSurveyData, clearAllSurveyData } from '@/lib/survey-logic'
 import { ParticipantSession } from '@/lib/types'
 import Logo from '@/components/ui/Logo'
+// import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 
 export default function AdminPage() {
   const [sessions, setSessions] = useState<ParticipantSession[]>([])
@@ -44,7 +45,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4 max-w-6xl">
         {/* Logo */}
         <div className="mb-8">
           <Logo />
@@ -60,10 +61,10 @@ export default function AdminPage() {
               </p>
             </div>
             <a
-              href="/"
-              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-custom-gray transition-colors"
+              href="/consultant/dashboard"
+              className="bg-rose-600 text-white px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors font-medium"
             >
-              Back to Home
+              Consultant Dashboard
             </a>
           </div>
         </div>

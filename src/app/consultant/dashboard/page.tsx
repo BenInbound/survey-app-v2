@@ -5,6 +5,7 @@ import { OrganizationalAssessment, AssessmentStatus } from '@/lib/types'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
 import { createDemoAssessment, fixDemoAssessmentStatus } from '@/lib/demo-data'
 import Logo from '@/components/ui/Logo'
+import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 
 export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
@@ -83,7 +84,8 @@ export default function ConsultantDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-custom-gray py-8">
+    <AuthGuard pageName="Consultant Dashboard">
+      <div className="min-h-screen bg-custom-gray py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <div className="mb-8">
@@ -100,12 +102,20 @@ export default function ConsultantDashboard() {
                 Manage organizational assessments and track participation
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Create New Assessment
-            </button>
+            <div className="flex gap-3">
+              <a
+                href="/admin"
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+              >
+                Admin Portal
+              </a>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Create New Assessment
+              </button>
+            </div>
           </div>
         </div>
 
@@ -323,6 +333,7 @@ export default function ConsultantDashboard() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AuthGuard>
   )
 }
