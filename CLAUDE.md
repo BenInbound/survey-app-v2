@@ -99,6 +99,14 @@ The project uses a **local-first development approach** that easily migrates to 
 - Demo organizational assessment `demo-org` includes pre-populated management and employee responses
 - All data persists in localStorage until manually cleared
 
+### Important Notes for Demo Testing
+- **Demo Assessment ID**: The platform uses a fixed ID `demo-org` for demo organizational assessments
+- **Data Consistency**: Demo data auto-initializes on page load if not present
+- **Results Access**: 
+  - Individual results: `/results/stork-assessment`
+  - Organizational results: `/consultant/results/demo-org`
+- **Clear Data**: Use `/admin` portal to reset all test data if needed
+
 ## Data Models
 
 ### Current Data Models (Individual Assessment)
@@ -216,7 +224,9 @@ The platform now includes:
 ### Data Flow
 - Questions stored in `src/data/questions.json` (8 strategic assessment questions)
 - Survey sessions managed by `SurveyManager` class in survey-logic.ts
-- All responses persist in localStorage with key pattern `survey-session-{surveyId}`
+- Individual responses persist in localStorage with key pattern `survey-session-{surveyId}`
+- Organizational assessments stored with keys: `organizational-assessments` and `organizational-responses`
+- Demo data uses fixed ID `demo-org` for consistent routing and testing
 - Data structure mirrors planned Supabase schema for easy migration
 
 ### Testing Coverage
@@ -246,6 +256,12 @@ The platform enables consultants like Guro to:
 
 ### Technical Foundation
 Current localStorage persistence enables immediate testing and demonstration without database setup. All data structures are designed for seamless Supabase migration when moving to production. The role-based access control system will maintain privacy-first design principles while providing powerful comparative analytics for consultants.
+
+### Recent Updates & Bug Fixes
+- **Demo Assessment Routing Fix**: Fixed issue where demo organizational assessment used random IDs instead of fixed `demo-org` ID, causing "Assessment not found" errors
+- **Enhanced UX**: Improved homepage with clearer distinction between Individual and Organizational result buttons
+- **Assessment Manager**: Updated `OrganizationalAssessmentManager.createAssessment()` to accept optional ID parameter for consistent demo data
+- **Visual Improvements**: Added purple border and instructional text to demo section for better user guidance
 
 ### OpenAI Integration
 AI summary generation requires `OPENAI_API_KEY` environment variable. See `.env.example` for setup instructions. The AI analysis is specifically tuned for organizational strategic insights rather than individual feedback.
