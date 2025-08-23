@@ -16,7 +16,7 @@ import {
 } from '@/lib/types'
 
 // Role-specific landing page components
-function EmployeeLandingPage({ organizationName, onStart }: { organizationName: string; onStart: () => void }) {
+function EmployeeLandingPage({ organizationName, assessmentId, onStart }: { organizationName: string; assessmentId: string; onStart: () => void }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
@@ -77,6 +77,15 @@ function EmployeeLandingPage({ organizationName, onStart }: { organizationName: 
           </p>
         </div>
 
+        <div className="text-center mb-6">
+          <a 
+            href={`/privacy/${assessmentId}`}
+            className="text-sm text-green-700 hover:text-green-800 underline"
+          >
+            View detailed privacy notice and your data protection rights
+          </a>
+        </div>
+
         <button
           onClick={onStart}
           className="w-full bg-green-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-green-700 transition-colors"
@@ -88,7 +97,7 @@ function EmployeeLandingPage({ organizationName, onStart }: { organizationName: 
   )
 }
 
-function ManagementLandingPage({ organizationName, onStart }: { organizationName: string; onStart: () => void }) {
+function ManagementLandingPage({ organizationName, assessmentId, onStart }: { organizationName: string; assessmentId: string; onStart: () => void }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
@@ -147,6 +156,15 @@ function ManagementLandingPage({ organizationName, onStart }: { organizationName
             <strong>Professional Consultation:</strong> Your responses will be analyzed by our strategy consultants 
             to provide organizational insights and recommendations through facilitated leadership sessions.
           </p>
+        </div>
+
+        <div className="text-center mb-6">
+          <a 
+            href={`/privacy/${assessmentId}`}
+            className="text-sm text-blue-700 hover:text-blue-800 underline"
+          >
+            View detailed privacy notice and your data protection rights
+          </a>
         </div>
 
         <button
@@ -368,9 +386,9 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   // Show role-specific landing page first
   if (showLandingPage && assessment && !surveyStarted) {
     if (role === 'employee') {
-      return <EmployeeLandingPage organizationName={assessment.organizationName} onStart={handleStartSurvey} />
+      return <EmployeeLandingPage organizationName={assessment.organizationName} assessmentId={assessmentId} onStart={handleStartSurvey} />
     } else if (role === 'management') {
-      return <ManagementLandingPage organizationName={assessment.organizationName} onStart={handleStartSurvey} />
+      return <ManagementLandingPage organizationName={assessment.organizationName} assessmentId={assessmentId} onStart={handleStartSurvey} />
     }
   }
 
