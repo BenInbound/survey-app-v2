@@ -86,6 +86,18 @@ This is a **strategic organizational diagnosis platform** built for Inbound's co
 - Authentication guard components protecting sensitive consultant-only areas
 - Production-ready consultant access control with simple password system
 
+**✅ Phase 8 - Question Management System (COMPLETED):**
+- Complete dynamic question management for consultants
+- QuestionManager class with localStorage persistence and validation
+- QuestionEditor component with intuitive drag-and-drop interface
+- Full CRUD operations: Add, Edit, Delete, Reorder questions
+- Category management with existing + custom category support
+- Question validation with comprehensive error handling
+- Reset to defaults functionality preserving original questions
+- Seamless integration with existing survey and assessment systems
+- 28 comprehensive tests covering all question management functionality
+- Production-ready consultant question customization capabilities
+
 ## Architecture Strategy
 
 The project uses a **local-first development approach** that easily migrates to production:
@@ -276,15 +288,17 @@ The platform now includes:
 - `src/components/ui/ComparativeSpiderChart.tsx` - Dual-overlay spider chart for management vs employee comparison
 - `src/components/ui/SummaryCard.tsx` - AI-powered strategic insights with loading states and error handling
 - `src/components/ui/Logo.tsx` - Reusable Inbound logo component with customizable sizing and linking
-- `src/components/ui/ConsultantLogin.tsx` - **NEW**: Professional consultant login form with brand-consistent styling
-- `src/components/ui/ConsultantAuthGuard.tsx` - **NEW**: Authentication wrapper protecting consultant-only pages
+- `src/components/ui/ConsultantLogin.tsx` - Professional consultant login form with brand-consistent styling
+- `src/components/ui/ConsultantAuthGuard.tsx` - Authentication wrapper protecting consultant-only pages
+- `src/components/ui/QuestionEditor.tsx` - **NEW**: Comprehensive question management component with drag-and-drop
 - `src/app/privacy/[assessmentId]/page.tsx` - GDPR privacy notice with assessment-specific data
-- `src/lib/survey-logic.ts` - Core survey management with localStorage persistence
+- `src/lib/survey-logic.ts` - Core survey management with localStorage persistence (updated for dynamic questions)
+- `src/lib/question-manager.ts` - **NEW**: Question CRUD operations, validation, and localStorage persistence
 - `src/lib/organizational-assessment-manager.ts` - Organizational assessment lifecycle and data aggregation
 - `src/lib/ai-summary.ts` - OpenAI API integration for both individual and organizational insights
 - `src/lib/demo-data.ts` - Pre-populated demo assessment for testing
-- `src/lib/consultant-auth.ts` - **NEW**: Consultant authentication system with localStorage session management
-- `src/lib/types.ts` - TypeScript interfaces including new organizational types
+- `src/lib/consultant-auth.ts` - Consultant authentication system with localStorage session management
+- `src/lib/types.ts` - TypeScript interfaces including question management types
 
 ### GDPR Compliance Architecture
 - `src/lib/gdpr-types.ts` - GDPR Article 4 definitions, legal basis framework, and privacy type system
@@ -310,10 +324,16 @@ The platform now includes:
 - Data structure mirrors planned Supabase schema for easy migration
 
 ### Testing Coverage
-- Comprehensive test suite covering all core functionality (270+ tests total)
-- Component tests for SliderInput, ProgressBar, SpiderChart, and SummaryCard
-- Logic tests for survey management, data persistence, and AI summary generation
+- Comprehensive test suite covering all core functionality (298+ tests total)
+- Component tests for SliderInput, ProgressBar, SpiderChart, SummaryCard, and QuestionEditor
+- Logic tests for survey management, question management, data persistence, and AI summary generation
 - Integration tests ensuring components work together across user flows
+- **Question Management Tests**: 28 comprehensive tests covering:
+  - QuestionManager CRUD operations and validation
+  - QuestionEditor UI interactions and form handling
+  - localStorage persistence and error handling
+  - Question reordering and category management
+  - Integration with existing survey system
 - **GDPR Compliance Tests**: 67 comprehensive privacy tests covering:
   - Data classification and legal basis validation
   - Privacy configuration and data minimization compliance
@@ -330,20 +350,24 @@ The platform now includes:
 ## Development Notes
 
 ### Current Status
-The application is now a complete organizational diagnosis platform with all three phases implemented. It provides:
+The application is now a complete organizational diagnosis platform with all eight phases implemented. It provides:
 - **Individual assessments** with personalized insights and spider chart visualizations
 - **Organizational assessments** with role-based comparative analytics
-- **Consultant workflows** for managing multiple client engagements
+- **Consultant workflows** for managing multiple client engagements and customizing questions
 - **Professional dashboards** ready for client presentations
+- **Dynamic question management** enabling consultants to fully customize assessment questions
 
 ### Platform Capabilities
 The platform enables consultants like Guro to:
 - Create and manage assessments for client organizations (e.g., Stork)
+- **Customize assessment questions** with full CRUD operations and drag-and-drop reordering
+- **Manage question categories** with existing and custom category support
 - Distribute role-specific survey links to management and employees
 - Track participation in real-time with lifecycle management controls
 - Analyze perception gaps between management and employee perspectives
 - Generate AI-powered strategic recommendations for organizational alignment
 - Present professional, client-ready results to different stakeholder groups
+- **Reset to default questions** when starting fresh assessments
 
 ### Technical Foundation
 Current localStorage persistence enables immediate testing and demonstration without database setup. All data structures are designed for seamless Supabase migration when moving to production. The role-based access control system will maintain privacy-first design principles while providing powerful comparative analytics for consultants.
