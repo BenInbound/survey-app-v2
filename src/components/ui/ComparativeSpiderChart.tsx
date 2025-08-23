@@ -169,7 +169,7 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Largest Perception Gaps</h3>
           <div className="space-y-3">
             {gapInsights.slice(0, 3).map((insight, index) => (
-              <div key={insight.category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={insight.category} className="flex items-center justify-between p-3 bg-custom-gray rounded-lg">
                 <div>
                   <div className="font-medium text-gray-900">{insight.category}</div>
                   <div className="text-sm text-gray-600">{insight.direction}</div>

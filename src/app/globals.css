@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TT Norms Pro Font */
+@font-face {
+  font-family: 'TT Norms Pro';
+  src: url('/assets/fonts/TT-Norms-Pro-Regular.woff2') format('woff2'),
+       url('/assets/fonts/TT-Norms-Pro-Regular.woff') format('woff'),
+       url('/assets/fonts/TT-Norms-Pro-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -14,6 +25,21 @@
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
+}
+
+/* Ensure form inputs have proper text color in all modes */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  color: #111827 !important; /* gray-900 - dark text */
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  color: #111827 !important; /* gray-900 - dark text */
 }
 
 body {

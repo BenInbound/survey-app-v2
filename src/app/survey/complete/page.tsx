@@ -2,6 +2,7 @@
 
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Logo from '@/components/ui/Logo'
 
 function SurveyCompleteContent() {
   const searchParams = useSearchParams()
@@ -10,6 +11,11 @@ function SurveyCompleteContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-16">
       <div className="container mx-auto px-4 max-w-2xl">
+        {/* Logo */}
+        <div className="mb-8">
+          <Logo />
+        </div>
+        
         <div className="text-center">
           {/* Success Icon */}
           <div className="mb-8">

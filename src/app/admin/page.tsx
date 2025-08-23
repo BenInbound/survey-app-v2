@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getAllSurveyData, clearAllSurveyData } from '@/lib/survey-logic'
 import { ParticipantSession } from '@/lib/types'
+import Logo from '@/components/ui/Logo'
 
 export default function AdminPage() {
   const [sessions, setSessions] = useState<ParticipantSession[]>([])
@@ -44,6 +45,11 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
+        {/* Logo */}
+        <div className="mb-8">
+          <Logo />
+        </div>
+        
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -55,7 +61,7 @@ export default function AdminPage() {
             </div>
             <a
               href="/"
-              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-custom-gray transition-colors"
             >
               Back to Home
             </a>
@@ -168,7 +174,7 @@ export default function AdminPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-custom-gray">
                     <tr>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                         Survey ID
@@ -195,7 +201,7 @@ export default function AdminPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {sessions.map((session, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
+                      <tr key={index} className="hover:bg-custom-gray">
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {session.surveyId}
                         </td>

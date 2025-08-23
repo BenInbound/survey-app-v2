@@ -5,6 +5,7 @@ import { SurveyManager } from '@/lib/survey-logic'
 import { ParticipantSession } from '@/lib/types'
 import { SpiderChart, CategoryAverage } from '@/components/ui/SpiderChart'
 import { SummaryCard } from '@/components/ui/SummaryCard'
+import Logo from '@/components/ui/Logo'
 
 interface ResultsPageProps {
   params: { id: string }
@@ -87,6 +88,11 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Logo */}
+        <div className="mb-8">
+          <Logo />
+        </div>
+        
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-4">
@@ -213,7 +219,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </button>
             <a
               href="/"
-              className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-custom-gray transition-colors"
             >
               Back to Home
             </a>

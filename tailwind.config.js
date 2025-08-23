@@ -9,11 +9,15 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          50: '#eff6ff',
+          50: '#FFE5EE',
           500: '#3b82f6',
           600: '#2563eb',
           700: '#1d4ed8',
-        }
+        },
+        'custom-gray': '#F8F8F4'
+      },
+      fontFamily: {
+        'sans': ['TT Norms Pro', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       }
     },
   },

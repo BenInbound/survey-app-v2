@@ -6,6 +6,7 @@ import { OrganizationalAssessment, ComparativeAnalysis } from '@/lib/types'
 import { ComparativeSpiderChart } from '@/components/ui/ComparativeSpiderChart'
 import { generateOrganizationalSummary } from '@/lib/ai-summary'
 import { createDemoAssessment } from '@/lib/demo-data'
+import Logo from '@/components/ui/Logo'
 
 interface ConsultantResultsProps {
   params: { id: string }
@@ -150,8 +151,12 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
   const hasData = assessment.responseCount.management > 0 || assessment.responseCount.employee > 0
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-custom-gray py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <div className="mb-8">
+          <Logo />
+        </div>
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -232,7 +237,7 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Gap Analysis</h2>
               <div className="space-y-4">
                 {comparativeAnalysis.gapAnalysis.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 bg-custom-gray rounded-lg">
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{item.category}</h3>
                       <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">

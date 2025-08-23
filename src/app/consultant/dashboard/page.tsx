@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { OrganizationalAssessment, AssessmentStatus } from '@/lib/types'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
 import { createDemoAssessment, fixDemoAssessmentStatus } from '@/lib/demo-data'
+import Logo from '@/components/ui/Logo'
 
 export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
@@ -82,8 +83,13 @@ export default function ConsultantDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-custom-gray py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <div className="mb-8">
+          <Logo />
+        </div>
+        
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
@@ -160,15 +166,13 @@ export default function ConsultantDashboard() {
         )}
 
         {/* Assessments List */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Active Assessments ({assessments.length})
-            </h2>
-          </div>
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">
+            Active Assessments ({assessments.length})
+          </h2>
           
           {assessments.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="bg-white rounded-xl shadow-lg text-center py-12">
               <div className="text-gray-400 text-lg mb-4">
                 No assessments created yet
               </div>
@@ -183,9 +187,9 @@ export default function ConsultantDashboard() {
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="space-y-6">
               {assessments.map((assessment) => (
-                <div key={assessment.id} className="p-6">
+                <div key={assessment.id} className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -200,10 +204,39 @@ export default function ConsultantDashboard() {
                     </div>
                   </div>
 
+                  {/* Participation Statistics */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="bg-custom-gray p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-2">Management Participation</h4>
+                      <div className="text-2xl font-bold text-rose-600 mb-1">
+                        {assessment.responseCount.management}
+                      </div>
+                      <p className="text-sm text-gray-600">responses received</p>
+                    </div>
+
+                    <div className="bg-custom-gray p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-2">Employee Participation</h4>
+                      <div className="text-2xl font-bold text-green-600 mb-1">
+                        {assessment.responseCount.employee}
+                      </div>
+                      <p className="text-sm text-gray-600">responses received</p>
+                    </div>
+                  </div>
+
+                  {/* View Results Button */}
+                  <div className="mb-6 flex justify-center">
+                    <a
+                      href={`/consultant/results/${assessment.id}`}
+                      className="bg-rose-600 text-white px-8 py-3 rounded-lg hover:bg-rose-700 transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                    >
+                      📊 View Assessment Results
+                    </a>
+                  </div>
+
                   {/* Access Code Section */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                  <div className="bg-rose-50 border border-rose-200 rounded-lg p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold text-blue-900">
+                      <h4 className="text-lg font-semibold text-rose-900">
                         <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
@@ -215,54 +248,35 @@ export default function ConsultantDashboard() {
                         className={`text-sm px-3 py-1 rounded ${
                           assessment.status === 'locked' 
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                            : 'bg-blue-200 text-blue-800 hover:bg-blue-300'
+                            : 'bg-rose-200 text-rose-800 hover:bg-rose-300'
                         }`}
                       >
                         Regenerate Code
                       </button>
                     </div>
                     
-                    <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <div className="bg-white rounded-lg p-4 border border-rose-200">
                       <div className="flex items-center justify-between">
-                        <div className="font-mono text-2xl font-bold text-blue-900 tracking-wider">
+                        <div className="font-mono text-2xl font-bold text-rose-900 tracking-wider">
                           {assessment.accessCode}
                         </div>
                         <button
                           onClick={() => copyToClipboard(assessment.accessCode, 'Access code')}
-                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                          className="bg-rose-600 text-white px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors text-sm font-medium"
                         >
                           Copy Code
                         </button>
                       </div>
                     </div>
                     
-                    <div className="mt-4 text-sm text-blue-800">
+                    <div className="mt-4 text-sm text-rose-800">
                       <strong>Distribution Instructions:</strong>
                       <ol className="list-decimal list-inside mt-2 space-y-1">
                         <li>Share this access code with your client contact (HR/Management)</li>
                         <li>Client distributes code to employees and management via internal channels</li>
-                        <li>Participants visit: <code className="bg-blue-100 px-1 rounded">{getAccessUrl()}</code></li>
+                        <li>Participants visit: <code className="bg-rose-100 px-1 rounded">{getAccessUrl()}</code></li>
                         <li>Participants enter the access code to begin their assessment</li>
                       </ol>
-                    </div>
-                  </div>
-
-                  {/* Participation Statistics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-2">Management Participation</h4>
-                      <div className="text-2xl font-bold text-blue-600 mb-1">
-                        {assessment.responseCount.management}
-                      </div>
-                      <p className="text-sm text-gray-600">responses received</p>
-                    </div>
-
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-2">Employee Participation</h4>
-                      <div className="text-2xl font-bold text-green-600 mb-1">
-                        {assessment.responseCount.employee}
-                      </div>
-                      <p className="text-sm text-gray-600">responses received</p>
                     </div>
                   </div>
 
@@ -302,15 +316,6 @@ export default function ConsultantDashboard() {
                         Lock
                       </button>
                     </div>
-
-                    {(assessment.responseCount.management > 0 || assessment.responseCount.employee > 0) && (
-                      <a
-                        href={`/consultant/results/${assessment.id}`}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                      >
-                        View Results
-                      </a>
-                    )}
                   </div>
                 </div>
               ))}

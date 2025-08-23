@@ -1,7 +1,13 @@
+import Logo from '@/components/ui/Logo'
+
 export default function ConsultantPortal() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-16">
+        {/* Logo */}
+        <div className="mb-8">
+          <Logo linkToHome={false} />
+        </div>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">

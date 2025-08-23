@@ -6,6 +6,7 @@ import SliderInput from '@/components/ui/SliderInput'
 import ProgressBar from '@/components/ui/ProgressBar'
 import { SurveyManager } from '@/lib/survey-logic'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
+import Logo from '@/components/ui/Logo'
 import { 
   ParticipantSession, 
   SliderValue, 
@@ -392,6 +393,11 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
+        {/* Logo */}
+        <div className="mb-8">
+          <Logo />
+        </div>
+        
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -434,7 +440,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             className={`
               flex items-center px-6 py-3 rounded-lg font-medium transition-colors
               ${canGoBack 
-                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' 
+                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-custom-gray' 
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }
             `}

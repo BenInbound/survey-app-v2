@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
+import Logo from '@/components/ui/Logo'
 
 interface AccessCodeEntryProps {
   params: { id: string }
@@ -58,8 +59,14 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      {/* Logo */}
+      <div className="pt-8 pb-4 pl-8">
+        <Logo />
+      </div>
+      
+      <div className="flex items-center justify-center flex-1">
+        <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,6 +134,7 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
               Contact your HR representative or the person who sent you this assessment link
             </p>
           </div>
+        </div>
         </div>
       </div>
     </div>
