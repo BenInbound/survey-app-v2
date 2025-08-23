@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { OrganizationalAssessment, AssessmentStatus } from '@/lib/types'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
-import { createDemoAssessment } from '@/lib/demo-data'
+import { createDemoAssessment, fixDemoAssessmentStatus } from '@/lib/demo-data'
 
 export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
@@ -20,24 +20,38 @@ export default function ConsultantDashboard() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAssessments = () => {
-    // Ensure demo assessment exists
+    // Ensure demo assessment exists and has correct status
     createDemoAssessment()
+    fixDemoAssessmentStatus()
     
     const allAssessments = assessmentManager.getAllAssessments()
     setAssessments(allAssessments)
   }
 
   const handleCreateAssessment = () => {
-    if (!newAssessment.organizationName.trim()) return
+    console.log('Create assessment clicked', { newAssessment })
+    
+    if (!newAssessment.organizationName.trim()) {
+      console.log('Organization name is empty, returning early')
+      return
+    }
 
-    const assessment = assessmentManager.createAssessment(
-      newAssessment.organizationName,
-      newAssessment.consultantId
-    )
+    try {
+      console.log('Creating assessment...')
+      const assessment = assessmentManager.createAssessment(
+        newAssessment.organizationName,
+        newAssessment.consultantId
+      )
+      console.log('Assessment created:', assessment)
 
-    setAssessments(prev => [assessment, ...prev])
-    setNewAssessment({ organizationName: '', consultantId: 'guro@inbound.com' })
-    setShowCreateForm(false)
+      setAssessments(prev => [assessment, ...prev])
+      setNewAssessment({ organizationName: '', consultantId: 'guro@inbound.com' })
+      setShowCreateForm(false)
+      console.log('Form closed, assessment added to list')
+    } catch (error) {
+      console.error('Error creating assessment:', error)
+      alert('Failed to create assessment. Please try again.')
+    }
   }
 
   const handleStatusChange = (assessmentId: string, newStatus: AssessmentStatus) => {

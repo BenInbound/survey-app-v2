@@ -11,9 +11,14 @@ export class AccessController {
 
   validateAccessCode(code: string, assessments: OrganizationalAssessment[]): AccessCodeValidation {
     const normalizedCode = code.trim().toUpperCase()
+    console.log('AccessController: Validating code', normalizedCode)
+    console.log('AccessController: Available assessments:', assessments.map(a => ({ id: a.id, code: a.accessCode, status: a.status })))
+    
     const assessment = assessments.find(a => a.accessCode === normalizedCode)
+    console.log('AccessController: Found assessment:', assessment?.id)
     
     if (!assessment) {
+      console.log('AccessController: No assessment found for code')
       return {
         code: normalizedCode,
         assessmentId: '',
@@ -24,8 +29,9 @@ export class AccessController {
     }
 
     const isExpired = this.isCodeExpired(assessment)
+    console.log('AccessController: Code expired?', isExpired, 'Status:', assessment.status)
     
-    return {
+    const result = {
       code: normalizedCode,
       assessmentId: assessment.id,
       organizationName: assessment.organizationName,
@@ -33,6 +39,9 @@ export class AccessController {
       isExpired,
       expiresAt: assessment.codeExpiration
     }
+    
+    console.log('AccessController: Validation result:', result)
+    return result
   }
 
   expireAccessCode(assessment: OrganizationalAssessment): OrganizationalAssessment {

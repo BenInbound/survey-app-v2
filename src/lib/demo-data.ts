@@ -4,10 +4,15 @@ import { ParticipantResponse, SliderValue } from './types'
 export function createDemoAssessment() {
   const assessmentManager = new OrganizationalAssessmentManager()
   
-  // Check if demo already exists
+  // Check if demo already exists and has correct status
   const existing = assessmentManager.getAssessment('demo-org')
-  if (existing) {
+  if (existing && existing.status === 'collecting') {
     return existing
+  }
+  
+  // If demo exists but has wrong status, recreate it
+  if (existing) {
+    console.log('Demo assessment exists with status:', existing.status, '- recreating with collecting status')
   }
 
   // Create demo assessment with fixed ID
@@ -130,13 +135,25 @@ export function createDemoAssessment() {
     assessmentManager.addParticipantResponse('demo-org', response)
   })
 
-  // Update status to ready
-  assessmentManager.updateAssessmentStatus('demo-org', 'ready')
+  // Keep status as collecting to allow new responses
+  // assessmentManager.updateAssessmentStatus('demo-org', 'ready')
 
   return assessmentManager.getAssessment('demo-org')
+}
+
+// Force demo assessment to have collecting status
+export function fixDemoAssessmentStatus() {
+  const assessmentManager = new OrganizationalAssessmentManager()
+  const existing = assessmentManager.getAssessment('demo-org')
+  
+  if (existing && existing.status !== 'collecting') {
+    console.log('Fixing demo assessment status from', existing.status, 'to collecting')
+    assessmentManager.updateAssessmentStatus('demo-org', 'collecting')
+  }
 }
 
 // Auto-initialize demo data if it doesn't exist
 if (typeof window !== 'undefined') {
   createDemoAssessment()
+  fixDemoAssessmentStatus()
 }
