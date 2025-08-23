@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { SurveyManager } from '@/lib/survey-logic'
 import { ParticipantSession } from '@/lib/types'
+import { SpiderChart, CategoryAverage } from '@/components/ui/SpiderChart'
+import { SummaryCard } from '@/components/ui/SummaryCard'
 
 interface ResultsPageProps {
   params: { id: string }
@@ -123,6 +125,27 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </div>
           </div>
         </div>
+
+        {/* Spider Chart Visualization */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">Strategic Assessment Overview</h2>
+          <SpiderChart 
+            categoryData={categoryAverages}
+            className="mx-auto"
+          />
+          <div className="mt-4 text-center text-sm text-gray-500">
+            Interactive radar chart showing performance across all strategic dimensions
+          </div>
+        </div>
+
+        {/* AI Strategic Insights */}
+        <SummaryCard
+          categoryAverages={categoryAverages}
+          overallAverage={overallAverage}
+          totalResponses={session.responses.length}
+          department={session.department}
+          className="mb-8"
+        />
 
         {/* Category Breakdown */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
