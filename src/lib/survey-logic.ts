@@ -1,5 +1,5 @@
 import { Question, ParticipantSession, SurveyProgress, SliderValue, SurveyStats } from './types'
-import questionsData from '@/data/questions.json'
+import { questionManager } from './question-manager'
 
 export class SurveyManager {
   private storageKey: string
@@ -103,7 +103,7 @@ export class SurveyManager {
   }
 
   getQuestions(): Question[] {
-    return questionsData as Question[]
+    return questionManager.getQuestions()
   }
 
   isComplete(session: ParticipantSession): boolean {

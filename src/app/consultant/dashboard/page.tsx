@@ -6,10 +6,12 @@ import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment
 import { createDemoAssessment, fixDemoAssessmentStatus } from '@/lib/demo-data'
 import Logo from '@/components/ui/Logo'
 import AuthGuard from '@/components/ui/ConsultantAuthGuard'
+import QuestionEditor from '@/components/ui/QuestionEditor'
 
 export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showQuestionManager, setShowQuestionManager] = useState(false)
   const [newAssessment, setNewAssessment] = useState({
     organizationName: '',
     consultantId: 'guro@inbound.com' // Default for demo
@@ -110,6 +112,12 @@ export default function ConsultantDashboard() {
                 Admin Portal
               </a>
               <button
+                onClick={() => setShowQuestionManager(!showQuestionManager)}
+                className="bg-rose-600 text-white px-6 py-3 rounded-lg hover:bg-rose-700 transition-colors font-medium"
+              >
+                Manage Questions
+              </button>
+              <button
                 onClick={() => setShowCreateForm(true)}
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
@@ -118,6 +126,18 @@ export default function ConsultantDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Question Management Section */}
+        {showQuestionManager && (
+          <div className="mb-8">
+            <QuestionEditor 
+              onQuestionsChange={() => {
+                // Optionally trigger any updates needed when questions change
+                console.log('Questions have been updated')
+              }}
+            />
+          </div>
+        )}
 
         {/* Create Assessment Modal */}
         {showCreateForm && (

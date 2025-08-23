@@ -49,6 +49,22 @@ export interface SurveyStats {
 
 export type SliderValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 
+export interface QuestionFormData {
+  text: string
+  category: string
+}
+
+export interface QuestionValidationResult {
+  isValid: boolean
+  errors: string[]
+}
+
+export interface QuestionManagerState {
+  questions: Question[]
+  isModified: boolean
+  lastModified?: Date
+}
+
 export interface SliderProps {
   value: SliderValue | null
   onChange: (value: SliderValue) => void
