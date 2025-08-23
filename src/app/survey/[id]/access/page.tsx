@@ -30,6 +30,7 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
 
     try {
       const validation = manager.validateAccessCode(code)
+      console.log('Access code validation:', validation) // Debug log
       
       if (!validation.isValid) {
         if (validation.isExpired) {
@@ -43,6 +44,7 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
       // Valid code - redirect to survey with role
       const role = searchParams.role || 'employee'
       const targetUrl = `/survey/${validation.assessmentId}?role=${role}&code=${code}`
+      console.log('Redirecting to:', targetUrl) // Debug log
       router.push(targetUrl)
       
     } catch (error) {

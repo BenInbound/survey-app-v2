@@ -18,6 +18,16 @@ export function createDemoAssessment() {
   // Create demo assessment with fixed ID
   const demoAssessment = assessmentManager.createAssessment('Demo Organization', 'demo@consultant.com', 'demo-org')
   
+  // Set fixed access code for demo by directly updating localStorage
+  if (typeof window !== 'undefined') {
+    const assessments = assessmentManager.getAllAssessments()
+    const demoIndex = assessments.findIndex(a => a.id === 'demo-org')
+    if (demoIndex >= 0) {
+      assessments[demoIndex].accessCode = 'DEMO-2025-STRATEGY'
+      localStorage.setItem('organizational-assessments', JSON.stringify(assessments))
+    }
+  }
+  
   // Add sample management responses
   const managementResponses: ParticipantResponse[] = [
     {
@@ -141,13 +151,23 @@ export function createDemoAssessment() {
   return assessmentManager.getAssessment('demo-org')
 }
 
-// Force demo assessment to have collecting status
+// Force demo assessment to have collecting status and correct access code
 export function fixDemoAssessmentStatus() {
   const assessmentManager = new OrganizationalAssessmentManager()
   const existing = assessmentManager.getAssessment('demo-org')
   
   if (existing && existing.status !== 'collecting') {
     assessmentManager.updateAssessmentStatus('demo-org', 'collecting')
+  }
+
+  // Ensure access code is always DEMO-2025-STRATEGY
+  if (typeof window !== 'undefined') {
+    const assessments = assessmentManager.getAllAssessments()
+    const demoIndex = assessments.findIndex(a => a.id === 'demo-org')
+    if (demoIndex >= 0 && assessments[demoIndex].accessCode !== 'DEMO-2025-STRATEGY') {
+      assessments[demoIndex].accessCode = 'DEMO-2025-STRATEGY'
+      localStorage.setItem('organizational-assessments', JSON.stringify(assessments))
+    }
   }
 }
 
