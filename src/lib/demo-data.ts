@@ -10,8 +10,8 @@ export function createDemoAssessment() {
     return existing
   }
 
-  // Create demo assessment
-  const demoAssessment = assessmentManager.createAssessment('Demo Organization', 'demo@consultant.com')
+  // Create demo assessment with fixed ID
+  const demoAssessment = assessmentManager.createAssessment('Demo Organization', 'demo@consultant.com', 'demo-org')
   
   // Add sample management responses
   const managementResponses: ParticipantResponse[] = [

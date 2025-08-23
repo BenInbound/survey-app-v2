@@ -11,9 +11,9 @@ export class OrganizationalAssessmentManager {
   private readonly STORAGE_KEY = 'organizational-assessments'
   private readonly RESPONSES_KEY = 'organizational-responses'
 
-  createAssessment(organizationName: string, consultantId: string): OrganizationalAssessment {
+  createAssessment(organizationName: string, consultantId: string, id?: string): OrganizationalAssessment {
     const assessment: OrganizationalAssessment = {
-      id: this.generateId(),
+      id: id || this.generateId(),
       organizationName,
       consultantId,
       status: 'collecting',

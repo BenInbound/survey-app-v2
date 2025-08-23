@@ -139,7 +139,7 @@ export default function Home() {
                     href="/results/stork-assessment"
                     className="text-green-600 hover:text-green-700 font-medium"
                   >
-                    View Previous Results
+                    View Individual Results
                   </a>
                 </div>
               </div>
@@ -147,10 +147,13 @@ export default function Home() {
           </div>
 
           {/* Demo Section */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-16 border-2 border-purple-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
               Try the Organizational Assessment Demo
             </h2>
+            <p className="text-center text-gray-600 text-sm mb-6">
+              Complete steps 1 & 2 as different roles, then view combined results in step 3
+            </p>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -196,7 +199,7 @@ export default function Home() {
                   href="/consultant/results/demo-org"
                   className="inline-flex items-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
                 >
-                  View Results
+                  View Organizational Results
                 </a>
               </div>
             </div>
