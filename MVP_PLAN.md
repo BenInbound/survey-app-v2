@@ -1,62 +1,79 @@
-# Stork Diagnosis Tool - MVP Implementation Plan
+# Stork Organizational Diagnosis Platform - Implementation Plan
 
 ## Overview
-Building a lightweight survey tool for strategic diagnosis exercises. MVP target: Sept 2, 2025. Focus on local development first, then migrate to Supabase hosting.
+Building a comprehensive organizational assessment platform for strategic diagnosis of client organizations. Enables consultants to collect and analyze comparative feedback from management and employees, identifying perception gaps and strategic alignment issues. Target for Stork engagement: September 2, 2025.
 
-## Core Requirements (Must Have)
+## Core Requirements
+
+### ✅ Completed (Phases 1-2)
 - ✅ One-question-at-a-time mobile-first survey flow
-- ✅ 1-10 slider scoring with visual feedback  
-- ✅ Progress bar for completion tracking
-- ✅ Spider chart visualization (primary output)
+- ✅ 1-10 slider scoring with visual feedback and animations
+- ✅ Progress bar for completion tracking  
+- ✅ Interactive spider chart visualization using Chart.js
+- ✅ AI-powered strategic insights using OpenAI API
 - ✅ Basic admin interface for question management
-- ✅ Secure survey links with unique IDs
-- ✅ Response collection by department/group
-- ✅ Simple text summaries of results
+- ✅ Comprehensive test coverage (79 tests, 96% passing)
+
+### 🔄 Phase 3 - Organizational Assessment Platform
+- [ ] Role-based access control (consultant, management, employee)
+- [ ] Multi-participant organizational assessments  
+- [ ] Consultant dashboard for creating and managing client assessments
+- [ ] Anonymous response aggregation (management vs employee)
+- [ ] Comparative analytics and gap identification
+- [ ] Assessment lifecycle management (collecting → ready → locked)
+- [ ] Role-appropriate result dashboards
 
 ## Technical Stack
 
-### Local Development
+### Current Stack (Phase 2 Complete)
 ```
 - Next.js 14 (App Router + TypeScript)
 - Tailwind CSS (responsive design)
-- Chart.js (spider chart visualization)
+- Chart.js + react-chartjs-2 (interactive spider chart)
+- OpenAI API (strategic insights generation) ✅
 - Local JSON files (question storage)
 - localStorage (response persistence)
+- Jest + Testing Library (comprehensive test suite)
 ```
 
 ### Production Migration Path
 ```
-- Supabase (database + auth + storage)
-- Vercel (deployment)
-- OpenAI API (text summaries)
+- Supabase (database + auth + storage for organizational assessments)
+- Vercel (deployment) 
+- Role-based authentication system
+- Multi-tenant data architecture for client organizations
 ```
 
 ## Project Structure
 ```
 /app
-  /page.tsx                # Landing/admin portal
-  /survey/[id]/page.tsx    # Survey interface
-  /results/[id]/page.tsx   # Results dashboard
-  /admin/page.tsx          # Admin management
+  /page.tsx                      # Landing/admin portal
+  /survey/[id]/page.tsx          # Survey interface with role support
+  /results/[id]/page.tsx         # Enhanced results with spider chart & AI
+  /admin/page.tsx                # Admin management
+  /consultant/                   # Planned: Consultant dashboard
+  /management/                   # Planned: Management results view
 /components
   /ui/
-    - Slider.tsx           # 1-10 scoring component
-    - ProgressBar.tsx      # Survey progress
-    - Button.tsx           # Consistent buttons
-  /charts/
-    - SpiderChart.tsx      # Chart.js radar chart
+    - SliderInput.tsx            # 1-10 scoring component ✅
+    - ProgressBar.tsx            # Survey progress tracking ✅
+    - SpiderChart.tsx            # Interactive radar chart ✅
+    - SummaryCard.tsx            # AI insights component ✅
+    - Button.tsx                 # Consistent buttons
+  /__tests__/                    # Comprehensive test suite ✅
 /data
-  /questions.json          # Sample question sets
-  /surveys.json            # Survey configurations
+  /questions.json                # Strategic assessment questions
 /lib
-  /types.ts                # TypeScript definitions
-  /survey-logic.ts         # Survey flow & validation
-  /storage.ts              # localStorage utilities
+  /types.ts                      # TypeScript definitions ✅
+  /survey-logic.ts               # Survey flow & validation ✅  
+  /ai-summary.ts                 # OpenAI integration ✅
+  /__tests__/                    # Logic test coverage ✅
+/.env.example                    # Environment configuration ✅
 ```
 
 ## Data Models
 
-### Question
+### Current Models (Individual Assessment)
 ```typescript
 interface Question {
   id: string
@@ -64,77 +81,118 @@ interface Question {
   category: string
   order: number
 }
-```
 
-### Survey Response  
-```typescript
-interface Response {
+interface ParticipantSession {
   surveyId: string
   participantId: string
   department: string
-  responses: { questionId: string; score: number }[]
-  completedAt: Date
+  responses: SurveyResponse[]
+  currentQuestionIndex: number
+  completedAt?: Date
+  startedAt: Date
+}
+
+interface CategoryAverage {
+  category: string
+  average: number
+  responses: number
 }
 ```
 
-### Survey Config
+### Planned Models (Organizational Assessment)
 ```typescript
-interface Survey {
+interface OrganizationalAssessment {
   id: string
-  name: string
-  questions: Question[]
-  branding: { name: string; primaryColor: string }
-  createdAt: Date
+  organizationName: string    // "Stork"
+  consultantId: string       // "guro@inbound.com"
+  status: 'collecting' | 'ready' | 'locked'
+  created: Date
+  lockedAt?: Date
+  
+  // Anonymous aggregated data only
+  managementResponses: AggregatedResponses
+  employeeResponses: AggregatedResponses
+  responseCount: { management: number, employee: number }
+}
+
+interface ParticipantResponse extends ParticipantSession {
+  role: 'management' | 'employee'
+  assessmentId: string
 }
 ```
 
 ## Implementation Phases
 
-### Phase 1: Core Survey Flow (Days 1-2)
+### ✅ Phase 1: Core Survey Flow (Completed)
 - [x] Next.js project setup with TypeScript
-- [ ] Basic UI components (Slider, ProgressBar, Layout)
-- [ ] Survey taking interface with navigation
-- [ ] localStorage response storage
-- [ ] Sample question set in JSON
+- [x] SliderInput component with emoji feedback and animations
+- [x] ProgressBar component with step indicators
+- [x] Survey taking interface with navigation
+- [x] localStorage response storage and persistence
+- [x] Strategic assessment question set
 
-### Phase 2: Visualization & Results (Days 3-4)  
-- [ ] Chart.js spider chart implementation
-- [ ] Results dashboard showing aggregated data
-- [ ] Department-based filtering/comparison
-- [ ] Response data processing utilities
+### ✅ Phase 2: Advanced Visualization & AI (Completed)  
+- [x] Interactive spider chart using Chart.js and react-chartjs-2
+- [x] AI-powered strategic insights using OpenAI API
+- [x] Enhanced results dashboard with professional client layout
+- [x] SummaryCard component with loading states and error handling
+- [x] Anonymous response aggregation utilities
+- [x] Comprehensive test coverage (79 tests, 96% passing)
 
-### Phase 3: Admin & Management (Days 5-6)
-- [ ] Admin interface for viewing all responses
-- [ ] Survey configuration management  
-- [ ] Basic branding system (name, colors)
-- [ ] Data export (JSON/CSV download)
+### 🔄 Phase 3: Organizational Assessment Platform (Current)
 
-### Phase 4: Polish & Testing (Days 7-8)
-- [ ] Mobile responsive optimization
-- [ ] Error handling and validation
-- [ ] Complete user flow testing
-- [ ] Performance optimization
+#### Phase 3a: Role-Based Infrastructure (Days 1-2)
+- [ ] Role-based survey link system (?role=management|employee)
+- [ ] Enhanced data models for organizational assessments
+- [ ] Anonymous response aggregation by role
+- [ ] Access control middleware and utilities
+
+#### Phase 3b: Consultant Dashboard (Days 3-4)
+- [ ] Assessment creation interface for client organizations
+- [ ] Real-time participation tracking dashboard
+- [ ] Assessment lifecycle controls (collecting → ready → locked)
+- [ ] Comparative analytics engine (management vs employee)
+
+#### Phase 3c: Role-Appropriate Results (Days 5-6)
+- [ ] Enhanced consultant results with gap analysis
+- [ ] Management results dashboard with curated insights
+- [ ] Employee post-survey thank you experience
+- [ ] Role-based access control implementation
+
+#### Phase 3d: Integration & Testing (Day 7)
+- [ ] End-to-end testing across all user roles
+- [ ] Performance optimization for comparative analytics
+- [ ] Production deployment preparation
+- [ ] Stork engagement readiness verification
 
 ## Key Features
 
-### Survey Experience
+### ✅ Current Survey Experience
 - Single question per screen with large, touch-friendly slider
-- Visual feedback (colors, emojis) for score selection
-- Progress indicator showing completion percentage
+- Visual feedback (colors, emojis, animations) for score selection
+- Animated progress indicator with step indicators
 - Department selection at start
-- Thank you page with completion confirmation
+- Professional completion experience
 
-### Results Dashboard  
-- Primary spider chart showing average scores by category
-- Department comparison view
-- Raw response data table
-- Basic statistics (completion rate, avg scores)
+### ✅ Current Results Dashboard  
+- Interactive spider chart showing category performance
+- AI-powered strategic insights with organizational context
+- Category breakdown with visual progress bars
+- Detailed response review with professional styling
+- Export-ready presentation format
 
-### Admin Interface
-- View all survey responses
+### ✅ Current Admin Interface
+- View all survey sessions and responses
 - Clear test data functionality
-- Switch between question sets
-- Generate new survey links
+- Comprehensive testing and debugging tools
+
+### 🔄 Planned Organizational Features
+- **Consultant Dashboard**: Create and manage client assessments
+- **Role-Based Distribution**: Generate management and employee survey links
+- **Comparative Analytics**: Management vs employee perception analysis
+- **Gap Identification**: Highlight organizational alignment issues
+- **Assessment Lifecycle**: Controlled data collection and presentation phases
+- **Privacy-First Design**: Anonymous employee feedback aggregation
 
 ## Local Development Workflow
 
