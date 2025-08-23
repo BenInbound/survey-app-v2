@@ -65,6 +65,36 @@ export interface QuestionManagerState {
   lastModified?: Date
 }
 
+export interface QuestionTemplate {
+  id: string
+  name: string
+  description: string
+  questions: Question[]
+  strategicFocus: StrategicFocus
+  createdAt: Date
+  isDefault: boolean
+}
+
+export type StrategicFocus = 
+  | 'strategic-alignment'
+  | 'innovation-growth' 
+  | 'leadership-culture'
+  | 'operational-excellence'
+  | 'performance-results'
+  | 'digital-transformation'
+  | 'custom'
+
+export interface AssessmentQuestionSetup {
+  source: 'default' | 'template' | 'copy-assessment' | 'blank'
+  templateId?: string
+  sourceAssessmentId?: string
+}
+
+export interface QuestionLibraryState {
+  templates: QuestionTemplate[]
+  lastModified: Date
+}
+
 export interface SliderProps {
   value: SliderValue | null
   onChange: (value: SliderValue) => void
@@ -104,6 +134,10 @@ export interface OrganizationalAssessment {
   accessCode: string
   codeExpiration?: Date
   codeRegeneratedAt?: Date
+  
+  // Assessment-specific questions
+  questions: Question[]
+  questionSource: AssessmentQuestionSetup
   
   // Anonymous aggregated data only
   managementResponses: AggregatedResponses

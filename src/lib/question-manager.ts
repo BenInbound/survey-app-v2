@@ -1,44 +1,31 @@
-import { Question, QuestionFormData, QuestionValidationResult, QuestionManagerState } from './types'
-import defaultQuestionsData from '@/data/questions.json'
+import { Question, QuestionFormData, QuestionValidationResult } from './types'
+import { OrganizationalAssessmentManager } from './organizational-assessment-manager'
 
 export class QuestionManager {
-  private readonly STORAGE_KEY = 'custom-questions-v1'
-  private readonly defaultQuestions: Question[] = defaultQuestionsData as Question[]
+  private readonly assessmentId: string
+  private readonly assessmentManager = new OrganizationalAssessmentManager()
+
+  constructor(assessmentId: string) {
+    this.assessmentId = assessmentId
+  }
 
   getQuestions(): Question[] {
-    if (typeof window === 'undefined') {
-      return this.defaultQuestions
-    }
-
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY)
-      if (!stored) {
-        return this.defaultQuestions
-      }
-
-      const state: QuestionManagerState = JSON.parse(stored)
-      return this.validateAndFixQuestions(state.questions)
+      return this.assessmentManager.getAssessmentQuestions(this.assessmentId)
     } catch (error) {
-      console.warn('Failed to load custom questions, using defaults:', error)
-      return this.defaultQuestions
+      console.error('Failed to load assessment questions:', error)
+      throw error
     }
   }
 
   saveQuestions(questions: Question[]): void {
-    if (typeof window === 'undefined') return
-
     const validation = this.validateQuestions(questions)
     if (!validation.isValid) {
       throw new Error(`Invalid questions: ${validation.errors.join(', ')}`)
     }
 
-    const state: QuestionManagerState = {
-      questions: this.normalizeQuestions(questions),
-      isModified: true,
-      lastModified: new Date()
-    }
-
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state))
+    const normalizedQuestions = this.normalizeQuestions(questions)
+    this.assessmentManager.updateAssessmentQuestions(this.assessmentId, normalizedQuestions)
   }
 
   addQuestion(questionData: QuestionFormData): Question {
@@ -104,18 +91,39 @@ export class QuestionManager {
   }
 
   resetToDefaults(): void {
-    if (typeof window === 'undefined') return
-    localStorage.removeItem(this.STORAGE_KEY)
+    const { questionTemplateManager } = require('./question-templates')
+    const defaultQuestions = questionTemplateManager.getDefaultTemplate().questions
+    this.saveQuestions(defaultQuestions)
   }
 
   getAvailableCategories(): string[] {
-    const questions = this.getQuestions()
-    return Array.from(new Set(questions.map(q => q.category))).sort()
+    try {
+      const questions = this.getQuestions()
+      return Array.from(new Set(questions.map(q => q.category))).sort()
+    } catch (error) {
+      console.error('Failed to load categories:', error)
+      return []
+    }
   }
 
   isUsingDefaults(): boolean {
-    if (typeof window === 'undefined') return true
-    return !localStorage.getItem(this.STORAGE_KEY)
+    try {
+      const { questionTemplateManager } = require('./question-templates')
+      const defaultQuestions = questionTemplateManager.getDefaultTemplate().questions
+      const currentQuestions = this.getQuestions()
+      
+      if (currentQuestions.length !== defaultQuestions.length) return false
+      
+      return currentQuestions.every((current, index) => {
+        const defaultQ = defaultQuestions[index]
+        return current.id === defaultQ.id && 
+               current.text === defaultQ.text && 
+               current.category === defaultQ.category
+      })
+    } catch (error) {
+      console.error('Failed to check if using defaults:', error)
+      return false
+    }
   }
 
   private validateQuestions(questions: Question[]): QuestionValidationResult {
@@ -157,15 +165,6 @@ export class QuestionManager {
     return { isValid: errors.length === 0, errors }
   }
 
-  private validateAndFixQuestions(questions: Question[]): Question[] {
-    const validation = this.validateQuestions(questions)
-    if (validation.isValid) {
-      return questions
-    }
-
-    console.warn('Questions failed validation, using defaults:', validation.errors)
-    return this.defaultQuestions
-  }
 
   private normalizeQuestions(questions: Question[]): Question[] {
     return questions
@@ -202,4 +201,5 @@ export class QuestionManager {
   }
 }
 
-export const questionManager = new QuestionManager()
+// QuestionManager now requires an assessmentId parameter
+// Usage: const questionManager = new QuestionManager(assessmentId)

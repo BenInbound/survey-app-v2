@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Question, QuestionFormData } from '@/lib/types'
-import { questionManager } from '@/lib/question-manager'
+import { QuestionManager } from '@/lib/question-manager'
 
 interface QuestionEditorProps {
+  assessmentId: string
   onQuestionsChange?: () => void
 }
 
-export default function QuestionEditor({ onQuestionsChange }: QuestionEditorProps) {
+export default function QuestionEditor({ assessmentId, onQuestionsChange }: QuestionEditorProps) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
@@ -18,12 +19,21 @@ export default function QuestionEditor({ onQuestionsChange }: QuestionEditorProp
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
+  const questionManager = useMemo(() => new QuestionManager(assessmentId), [assessmentId])
+
   const loadQuestions = useCallback(() => {
-    const currentQuestions = questionManager.getQuestions()
-    setQuestions(currentQuestions)
-    setAvailableCategories(questionManager.getAvailableCategories())
-    onQuestionsChange?.()
-  }, [onQuestionsChange])
+    try {
+      const currentQuestions = questionManager.getQuestions()
+      setQuestions(currentQuestions)
+      setAvailableCategories(questionManager.getAvailableCategories())
+      onQuestionsChange?.()
+    } catch (error) {
+      console.error('Failed to load questions in QuestionEditor:', error)
+      setQuestions([])
+      setAvailableCategories([])
+      // Optionally show user feedback
+    }
+  }, [questionManager, onQuestionsChange])
 
   useEffect(() => {
     loadQuestions()

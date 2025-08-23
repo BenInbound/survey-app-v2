@@ -1,4 +1,6 @@
 import { QuestionManager } from '../question-manager'
+import { OrganizationalAssessmentManager } from '../organizational-assessment-manager'
+import { questionTemplateManager } from '../question-templates'
 import { Question, QuestionFormData } from '../types'
 
 // Mock localStorage
@@ -23,54 +25,46 @@ Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage
 })
 
-// Use the actual default questions for testing
-const defaultQuestions: Question[] = [
-  { id: 'vision-clarity', text: 'Our organization has a clear and compelling vision for the future', category: 'Vision & Strategy', order: 1 },
-  { id: 'strategy-execution', text: 'We consistently execute on our strategic priorities', category: 'Vision & Strategy', order: 2 },
-  { id: 'customer-focus', text: 'We deeply understand and respond to customer needs', category: 'Market & Customer', order: 3 },
-  { id: 'innovation-capability', text: 'Our organization fosters innovation and adapts quickly to change', category: 'Innovation & Agility', order: 4 },
-  { id: 'leadership-effectiveness', text: 'Leadership provides clear direction and inspiration', category: 'Leadership & Culture', order: 5 },
-  { id: 'team-collaboration', text: 'Teams collaborate effectively across the organization', category: 'Leadership & Culture', order: 6 },
-  { id: 'operational-efficiency', text: 'Our processes and operations run smoothly and efficiently', category: 'Operations & Performance', order: 7 },
-  { id: 'financial-performance', text: 'We consistently meet our financial targets and goals', category: 'Operations & Performance', order: 8 }
-]
+// Get default questions from the strategic-alignment template
+const getDefaultQuestions = (): Question[] => {
+  return questionTemplateManager.getDefaultTemplate().questions
+}
 
 describe('QuestionManager', () => {
   let questionManager: QuestionManager
+  let assessmentManager: OrganizationalAssessmentManager
+  const testAssessmentId = 'test-assessment-id'
   
   beforeEach(() => {
     mockLocalStorage.clear()
-    questionManager = new QuestionManager()
+    assessmentManager = new OrganizationalAssessmentManager()
+    
+    // Create a test assessment for the QuestionManager to work with
+    assessmentManager.createAssessment('Test Organization', 'test@consultant.com', undefined, testAssessmentId)
+    
+    questionManager = new QuestionManager(testAssessmentId)
   })
 
   describe('getQuestions', () => {
     it('should return default questions when no custom questions exist', () => {
       const questions = questionManager.getQuestions()
-      expect(questions).toEqual(defaultQuestions)
+      expect(questions).toEqual(getDefaultQuestions())
     })
 
     it('should return custom questions when they exist in localStorage', () => {
-      const customQuestions: Question[] = [
-        { id: 'custom-1', text: 'Custom Question 1', category: 'Custom Category', order: 1 }
-      ]
-      
-      const state = {
-        questions: customQuestions,
-        isModified: true,
-        lastModified: new Date()
-      }
-      
-      mockLocalStorage.setItem('custom-questions-v1', JSON.stringify(state))
+      // Add a custom question using the QuestionManager API
+      const addedQuestion = questionManager.addQuestion({ text: 'Custom Question 1', category: 'Custom Category' })
       
       const questions = questionManager.getQuestions()
-      expect(questions).toEqual(customQuestions)
+      expect(questions).toContainEqual(addedQuestion)
+      expect(questions.length).toBeGreaterThan(getDefaultQuestions().length)
     })
 
     it('should fallback to defaults when localStorage contains invalid data', () => {
       mockLocalStorage.setItem('custom-questions-v1', 'invalid-json')
       
       const questions = questionManager.getQuestions()
-      expect(questions).toEqual(defaultQuestions)
+      expect(questions).toEqual(getDefaultQuestions())
     })
   })
 
@@ -178,19 +172,22 @@ describe('QuestionManager', () => {
 
   describe('reorderQuestions', () => {
     it('should reorder questions correctly', () => {
-      const questionIds = ['strategy-execution', 'vision-clarity', 'customer-focus', 'innovation-capability', 'leadership-effectiveness', 'team-collaboration', 'operational-efficiency', 'financial-performance']
+      const allQuestions = questionManager.getQuestions()
+      const questionIds = [allQuestions[1].id, allQuestions[0].id, ...allQuestions.slice(2).map(q => q.id)] // Swap first two questions
+      
       questionManager.reorderQuestions(questionIds)
       
       const questions = questionManager.getQuestions()
-      expect(questions[0].id).toBe('strategy-execution')
+      expect(questions[0].id).toBe(allQuestions[1].id) // Second question is now first
       expect(questions[0].order).toBe(1)
-      expect(questions[1].id).toBe('vision-clarity')
+      expect(questions[1].id).toBe(allQuestions[0].id) // First question is now second
       expect(questions[1].order).toBe(2)
     })
 
     it('should throw an error when reordering with invalid question ID', () => {
+      const allQuestions = questionManager.getQuestions()
       expect(() => {
-        questionManager.reorderQuestions(['vision-clarity', 'non-existent'])
+        questionManager.reorderQuestions([allQuestions[0].id, 'non-existent'])
       }).toThrow('Question with id non-existent not found')
     })
   })
@@ -198,14 +195,17 @@ describe('QuestionManager', () => {
   describe('getAvailableCategories', () => {
     it('should return unique categories sorted alphabetically', () => {
       const categories = questionManager.getAvailableCategories()
-      expect(categories).toEqual(['Innovation & Agility', 'Leadership & Culture', 'Market & Customer', 'Operations & Performance', 'Vision & Strategy'])
+      const expectedCategories = Array.from(new Set(getDefaultQuestions().map(q => q.category))).sort()
+      expect(categories).toEqual(expectedCategories)
     })
 
     it('should include categories from custom questions', () => {
       questionManager.addQuestion({ text: 'Test', category: 'Custom Category' })
       
       const categories = questionManager.getAvailableCategories()
-      expect(categories).toEqual(['Custom Category', 'Innovation & Agility', 'Leadership & Culture', 'Market & Customer', 'Operations & Performance', 'Vision & Strategy'])
+      const defaultCategories = Array.from(new Set(getDefaultQuestions().map(q => q.category)))
+      const expectedCategories = ['Custom Category', ...defaultCategories].sort()
+      expect(categories).toEqual(expectedCategories)
     })
   })
 
@@ -217,7 +217,7 @@ describe('QuestionManager', () => {
       questionManager.resetToDefaults()
       
       expect(questionManager.isUsingDefaults()).toBe(true)
-      expect(questionManager.getQuestions()).toEqual(defaultQuestions)
+      expect(questionManager.getQuestions()).toEqual(getDefaultQuestions())
     })
   })
 
@@ -264,6 +264,20 @@ describe('QuestionManager', () => {
       expect(() => {
         questionManager.saveQuestions(invalidQuestions)
       }).toThrow(/Duplicate ID/)
+    })
+  })
+
+  describe('error handling', () => {
+    it('should return empty categories when assessment not found', () => {
+      const invalidQuestionManager = new QuestionManager('non-existent-assessment')
+      const categories = invalidQuestionManager.getAvailableCategories()
+      expect(categories).toEqual([])
+    })
+
+    it('should return false for isUsingDefaults when assessment not found', () => {
+      const invalidQuestionManager = new QuestionManager('non-existent-assessment')
+      const isUsingDefaults = invalidQuestionManager.isUsingDefaults()
+      expect(isUsingDefaults).toBe(false)
     })
   })
 })

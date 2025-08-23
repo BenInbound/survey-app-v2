@@ -4,16 +4,26 @@ import {
   AggregatedResponses, 
   CategoryAverage,
   ParticipantResponse,
-  ParticipantRole 
+  ParticipantRole,
+  AssessmentQuestionSetup,
+  Question
 } from './types'
 import { AccessController } from './access-control'
+import { questionTemplateManager } from './question-templates'
 
 export class OrganizationalAssessmentManager {
   private readonly STORAGE_KEY = 'organizational-assessments'
   private readonly RESPONSES_KEY = 'organizational-responses'
   private readonly accessController = new AccessController()
 
-  createAssessment(organizationName: string, consultantId: string, id?: string): OrganizationalAssessment {
+  createAssessment(
+    organizationName: string, 
+    consultantId: string, 
+    questionSetup?: AssessmentQuestionSetup,
+    id?: string
+  ): OrganizationalAssessment {
+    const questions = this.getQuestionsForSetup(questionSetup)
+    
     const assessment: OrganizationalAssessment = {
       id: id || this.generateId(),
       organizationName,
@@ -21,6 +31,8 @@ export class OrganizationalAssessmentManager {
       status: 'collecting',
       created: new Date(),
       accessCode: this.accessController.generateAccessCode(organizationName),
+      questions,
+      questionSource: questionSetup || { source: 'default' },
       managementResponses: {
         categoryAverages: [],
         overallAverage: 0,
@@ -238,6 +250,59 @@ export class OrganizationalAssessmentManager {
   private saveAllAssessments(assessments: OrganizationalAssessment[]): void {
     if (typeof window === 'undefined') return
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(assessments))
+  }
+
+  private getQuestionsForSetup(questionSetup?: AssessmentQuestionSetup) {
+    if (!questionSetup || questionSetup.source === 'default') {
+      return questionTemplateManager.getDefaultTemplate().questions
+    }
+    
+    switch (questionSetup.source) {
+      case 'template':
+        if (!questionSetup.templateId) {
+          throw new Error('Template ID is required for template source')
+        }
+        const template = questionTemplateManager.getAllTemplates().find(t => t.id === questionSetup.templateId)
+        if (!template) {
+          throw new Error(`Template not found: ${questionSetup.templateId}`)
+        }
+        return template.questions
+        
+      case 'copy-assessment':
+        if (!questionSetup.sourceAssessmentId) {
+          throw new Error('Source assessment ID is required for copy-assessment source')
+        }
+        const sourceAssessment = this.getAssessment(questionSetup.sourceAssessmentId)
+        if (!sourceAssessment) {
+          throw new Error(`Source assessment not found: ${questionSetup.sourceAssessmentId}`)
+        }
+        return sourceAssessment.questions
+        
+      case 'blank':
+        return []
+        
+      default:
+        return questionTemplateManager.getDefaultTemplate().questions
+    }
+  }
+
+  updateAssessmentQuestions(assessmentId: string, questions: Question[]): void {
+    const assessment = this.getAssessment(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+    
+    assessment.questions = questions
+    this.saveAssessment(assessment)
+  }
+
+  getAssessmentQuestions(assessmentId: string) {
+    const assessment = this.getAssessment(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+    
+    return assessment.questions
   }
 
   private generateId(): string {

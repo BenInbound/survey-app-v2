@@ -11,7 +11,7 @@ import QuestionEditor from '@/components/ui/QuestionEditor'
 export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [showQuestionManager, setShowQuestionManager] = useState(false)
+  const [questionManagerAssessmentId, setQuestionManagerAssessmentId] = useState<string | null>(null)
   const [newAssessment, setNewAssessment] = useState({
     organizationName: '',
     consultantId: 'guro@inbound.com' // Default for demo
@@ -112,12 +112,6 @@ export default function ConsultantDashboard() {
                 Admin Portal
               </a>
               <button
-                onClick={() => setShowQuestionManager(!showQuestionManager)}
-                className="bg-rose-600 text-white px-6 py-3 rounded-lg hover:bg-rose-700 transition-colors font-medium"
-              >
-                Manage Questions
-              </button>
-              <button
                 onClick={() => setShowCreateForm(true)}
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
@@ -128,12 +122,26 @@ export default function ConsultantDashboard() {
         </div>
 
         {/* Question Management Section */}
-        {showQuestionManager && (
+        {questionManagerAssessmentId && (
           <div className="mb-8">
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Managing Questions for: {assessments.find(a => a.id === questionManagerAssessmentId)?.organizationName}
+                </h3>
+                <button
+                  onClick={() => setQuestionManagerAssessmentId(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
             <QuestionEditor 
+              assessmentId={questionManagerAssessmentId}
               onQuestionsChange={() => {
                 // Optionally trigger any updates needed when questions change
-                console.log('Questions have been updated')
+                console.log(`Questions updated for assessment: ${questionManagerAssessmentId}`)
               }}
             />
           </div>
@@ -310,7 +318,7 @@ export default function ConsultantDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleStatusChange(assessment.id, 'collecting')}
@@ -346,6 +354,12 @@ export default function ConsultantDashboard() {
                         Lock
                       </button>
                     </div>
+                    <button
+                      onClick={() => setQuestionManagerAssessmentId(assessment.id)}
+                      className="bg-rose-600 text-white px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors text-sm font-medium"
+                    >
+                      📝 Manage Questions
+                    </button>
                   </div>
                 </div>
               ))}

@@ -1,11 +1,13 @@
 import { Question, ParticipantSession, SurveyProgress, SliderValue, SurveyStats } from './types'
-import { questionManager } from './question-manager'
+import { QuestionManager } from './question-manager'
 
 export class SurveyManager {
   private storageKey: string
+  private questionManager: QuestionManager
 
-  constructor(surveyId: string) {
-    this.storageKey = `survey-session-${surveyId}`
+  constructor(assessmentId: string) {
+    this.storageKey = `survey-session-${assessmentId}`
+    this.questionManager = new QuestionManager(assessmentId)
   }
 
   getCurrentQuestion(session: ParticipantSession): Question | null {
@@ -103,7 +105,7 @@ export class SurveyManager {
   }
 
   getQuestions(): Question[] {
-    return questionManager.getQuestions()
+    return this.questionManager.getQuestions()
   }
 
   isComplete(session: ParticipantSession): boolean {
