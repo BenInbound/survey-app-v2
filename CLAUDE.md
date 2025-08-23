@@ -236,11 +236,19 @@ The platform now includes:
 - `src/components/ui/SpiderChart.tsx` - Interactive radar chart using Chart.js for individual assessment
 - `src/components/ui/ComparativeSpiderChart.tsx` - Dual-overlay spider chart for management vs employee comparison
 - `src/components/ui/SummaryCard.tsx` - AI-powered strategic insights with loading states and error handling
+- `src/components/ui/Logo.tsx` - **NEW**: Reusable Inbound logo component with customizable sizing and linking
 - `src/lib/survey-logic.ts` - Core survey management with localStorage persistence
 - `src/lib/organizational-assessment-manager.ts` - Organizational assessment lifecycle and data aggregation
 - `src/lib/ai-summary.ts` - OpenAI API integration for both individual and organizational insights
 - `src/lib/demo-data.ts` - Pre-populated demo assessment for testing
 - `src/lib/types.ts` - TypeScript interfaces including new organizational types
+
+### Brand Identity & Design System
+- **Logo**: Inbound logo (`public/assets/images/Inbound-logo-RGB.svg`) displayed on all screens
+- **Typography**: TT Norms Pro font family with web-optimized formats (WOFF2/WOFF/TTF)
+- **Color Scheme**: Rose/pink theme (#FFE5EE primary, #F8F8F4 custom background)
+- **Font Assets**: `public/assets/fonts/` with progressive loading (WOFF2 → WOFF → TTF)
+- **Consistent Branding**: Logo component used across all application screens
 
 ### Data Flow
 - Questions stored in `src/data/questions.json` (8 strategic assessment questions)
@@ -353,3 +361,34 @@ interface AccessCodeValidation {
   - **'ready'**: Has responses, allows additional responses for testing/late additions
   - **'locked'**: No new responses allowed, consultant-only analytics access
 - Demo assessment properly initializes and maintains correct status for testing
+
+### Latest Brand Identity & UX Updates (August 2025) ✅
+
+#### ✅ Professional Brand Implementation
+- **Inbound Logo Integration**: Added SVG logo component with responsive sizing across all application screens
+- **Custom Typography**: Replaced Inter with TT Norms Pro font family
+  - Converted TTF to web-optimized WOFF2/WOFF formats for 67% better compression
+  - Progressive font loading with proper fallbacks for optimal performance
+  - Font-display: swap for improved loading experience
+
+#### ✅ Visual Identity Transformation
+- **Color Scheme Overhaul**: Updated from blue (#eff6ff) to rose/pink theme (#FFE5EE)
+  - Consultant dashboard Access Code section now uses cohesive pink styling
+  - Participation statistics updated to match new brand colors
+  - All UI components consistently themed with rose/pink palette
+- **Background Enhancement**: Custom warm off-white background (#F8F8F4) replacing default grays
+
+#### ✅ Consultant Dashboard UX Improvements
+- **Prominent "View Results" Button**: Added large, centered button after participation stats
+  - Always visible (removed conditional display based on response count)
+  - Enhanced with hover effects and visual emphasis
+  - Better information hierarchy: stats → results → access tools
+- **Assessment Card Separation**: Individual cards with proper spacing and shadows
+- **Form Input Fixes**: Resolved white-on-white text visibility issues in dark mode
+
+#### ✅ Asset Organization & Performance
+- **Structured Asset Management**: 
+  - Fonts: `public/assets/fonts/` with WOFF2 (95KB), WOFF (134KB), TTF (288KB)
+  - Images: `public/assets/images/` for logo and visual assets
+- **Component Architecture**: Reusable `Logo.tsx` component with configurable sizing and linking
+- **Web Performance**: Optimized font loading reduces initial page weight by 33%
