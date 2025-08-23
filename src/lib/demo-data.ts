@@ -12,7 +12,7 @@ export function createDemoAssessment() {
   
   // If demo exists but has wrong status, recreate it
   if (existing) {
-    console.log('Demo assessment exists with status:', existing.status, '- recreating with collecting status')
+    // Recreate demo with correct status
   }
 
   // Create demo assessment with fixed ID
@@ -147,7 +147,6 @@ export function fixDemoAssessmentStatus() {
   const existing = assessmentManager.getAssessment('demo-org')
   
   if (existing && existing.status !== 'collecting') {
-    console.log('Fixing demo assessment status from', existing.status, 'to collecting')
     assessmentManager.updateAssessmentStatus('demo-org', 'collecting')
   }
 }

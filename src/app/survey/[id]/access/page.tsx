@@ -28,12 +28,9 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
     setError('')
 
     try {
-      console.log('Validating access code:', code)
       const validation = manager.validateAccessCode(code)
-      console.log('Validation result:', validation)
       
       if (!validation.isValid) {
-        console.log('Code validation failed:', { isExpired: validation.isExpired })
         if (validation.isExpired) {
           setError('This assessment code has expired. Please contact your organization for a new code.')
         } else {
@@ -45,7 +42,6 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
       // Valid code - redirect to survey with role
       const role = searchParams.role || 'employee'
       const targetUrl = `/survey/${validation.assessmentId}?role=${role}&code=${code}`
-      console.log('Redirecting to:', targetUrl)
       router.push(targetUrl)
       
     } catch (error) {

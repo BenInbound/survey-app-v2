@@ -29,25 +29,17 @@ export default function ConsultantDashboard() {
   }
 
   const handleCreateAssessment = () => {
-    console.log('Create assessment clicked', { newAssessment })
-    
-    if (!newAssessment.organizationName.trim()) {
-      console.log('Organization name is empty, returning early')
-      return
-    }
+    if (!newAssessment.organizationName.trim()) return
 
     try {
-      console.log('Creating assessment...')
       const assessment = assessmentManager.createAssessment(
         newAssessment.organizationName,
         newAssessment.consultantId
       )
-      console.log('Assessment created:', assessment)
 
       setAssessments(prev => [assessment, ...prev])
       setNewAssessment({ organizationName: '', consultantId: 'guro@inbound.com' })
       setShowCreateForm(false)
-      console.log('Form closed, assessment added to list')
     } catch (error) {
       console.error('Error creating assessment:', error)
       alert('Failed to create assessment. Please try again.')

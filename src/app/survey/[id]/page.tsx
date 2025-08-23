@@ -184,35 +184,26 @@ export default function SurveyPage({ params }: SurveyPageProps) {
 
   // Initialize or load existing session
   useEffect(() => {
-    console.log('Survey page initializing with:', { assessmentId, role, code })
-    
     try {
       // Validate access code first
       if (!code) {
-        console.log('No code provided, redirecting to access page')
         router.push(`/survey/${assessmentId}/access?role=${role || 'employee'}`)
         return
       }
 
       // Validate the access code
-      console.log('Validating access code in survey page:', code)
       const codeValidation = assessmentManager.validateAccessCode(code)
-      console.log('Code validation result:', codeValidation)
       
       if (!codeValidation.isValid) {
-        console.log('Code validation failed')
         setError('Invalid or expired access code. Please contact your organization.')
         setIsLoading(false)
         return
       }
 
       // Get the assessment details
-      console.log('Looking for assessment with ID:', codeValidation.assessmentId)
       const foundAssessment = assessmentManager.getAssessment(codeValidation.assessmentId)
-      console.log('Found assessment:', foundAssessment)
       
       if (!foundAssessment) {
-        console.log('Assessment not found for ID:', codeValidation.assessmentId)
         setError('Assessment not found.')
         setIsLoading(false)
         return
@@ -221,23 +212,17 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       setAssessment(foundAssessment)
 
       if (!role) {
-        console.log('No role specified')
         setError('This is an organizational assessment. Please access through a role-specific link.')
         setIsLoading(false)
         return
       }
 
       if (foundAssessment.status === 'locked') {
-        console.log('Assessment status is locked:', foundAssessment.status)
         setError('This assessment is no longer accepting responses.')
         setIsLoading(false)
         return
       }
-      
-      // Allow both 'collecting' and 'ready' status for demo purposes
-      console.log('Assessment status is:', foundAssessment.status, '- allowing access')
 
-      console.log('Survey initialization successful')
       setIsLoading(false)
       
     } catch (err) {
