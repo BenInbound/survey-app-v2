@@ -1,0 +1,50 @@
+[
+  {
+    "id": "vision-clarity",
+    "text": "Our organization has a clear and compelling vision for the future",
+    "category": "Vision & Strategy",
+    "order": 1
+  },
+  {
+    "id": "strategy-execution",
+    "text": "We consistently execute on our strategic priorities",
+    "category": "Vision & Strategy", 
+    "order": 2
+  },
+  {
+    "id": "customer-focus",
+    "text": "We deeply understand and respond to customer needs",
+    "category": "Market & Customer",
+    "order": 3
+  },
+  {
+    "id": "innovation-capability",
+    "text": "Our organization fosters innovation and adapts quickly to change",
+    "category": "Innovation & Agility",
+    "order": 4
+  },
+  {
+    "id": "leadership-effectiveness",
+    "text": "Leadership provides clear direction and inspiration",
+    "category": "Leadership & Culture",
+    "order": 5
+  },
+  {
+    "id": "team-collaboration",
+    "text": "Teams collaborate effectively across the organization",
+    "category": "Leadership & Culture",
+    "order": 6
+  },
+  {
+    "id": "operational-efficiency",
+    "text": "Our processes and operations run smoothly and efficiently",
+    "category": "Operations & Performance",
+    "order": 7
+  },
+  {
+    "id": "financial-performance",
+    "text": "We consistently meet our financial targets and goals",
+    "category": "Operations & Performance",
+    "order": 8
+  }
+]
