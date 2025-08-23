@@ -27,6 +27,16 @@ Visit `http://localhost:3000` to access the platform.
 - Assessment lifecycle management
 - Professional client presentation dashboards
 
+### ✅ Per-Assessment Question Management
+- Client-specific question customization for each assessment
+- 6 strategic focus templates with 54 professional questions:
+  - Strategic Alignment, Innovation & Growth, Leadership & Culture
+  - Operational Excellence, Performance & Results, Digital Transformation
+- Flexible question sources (default template, custom template, copy assessment, blank)
+- Full CRUD operations: Add, Edit, Delete, Reorder questions
+- Question template library with reusable custom question sets
+- Assessment-specific context with individual "📝 Manage Questions" buttons
+
 ### ✅ Consultant Authentication
 - Password-protected consultant dashboard and admin portal
 - Secure session management with 24-hour expiration
@@ -69,6 +79,12 @@ Visit `http://localhost:3000` to access the platform.
 
 ## 🎯 Status
 
-**✅ All phases complete** - Platform ready for Stork engagement (September 2025)
+**✅ All 8 phases complete** - Production-ready platform with per-assessment question management
+
+Latest addition: **Phase 8 - Per-Assessment Question Management System**
+- Transform from global to client-specific question customization
+- 6 strategic focus templates with comprehensive question libraries
+- Assessment-specific context enabling unique client engagement strategies
+- 38 comprehensive tests covering all question management functionality
 
 Built with ❤️ for Inbound's strategic consulting practice.

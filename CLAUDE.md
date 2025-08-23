@@ -86,17 +86,31 @@ This is a **strategic organizational diagnosis platform** built for Inbound's co
 - Authentication guard components protecting sensitive consultant-only areas
 - Production-ready consultant access control with simple password system
 
-**✅ Phase 8 - Question Management System (COMPLETED):**
-- Complete dynamic question management for consultants
-- QuestionManager class with localStorage persistence and validation
-- QuestionEditor component with intuitive drag-and-drop interface
-- Full CRUD operations: Add, Edit, Delete, Reorder questions
-- Category management with existing + custom category support
-- Question validation with comprehensive error handling
-- Reset to defaults functionality preserving original questions
-- Seamless integration with existing survey and assessment systems
-- 28 comprehensive tests covering all question management functionality
-- Production-ready consultant question customization capabilities
+**✅ Phase 8 - Per-Assessment Question Management System (COMPLETED):**
+- Transform from global to per-assessment question architecture enabling client-specific customization
+- 6 strategic focus templates with 54 professional questions total across different strategic dimensions:
+  - **Strategic Alignment** (8 questions) - Default template focusing on clarity, positioning, and competitive advantage
+  - **Innovation & Growth** (10 questions) - Market expansion and innovation capabilities
+  - **Leadership & Culture** (12 questions) - People transformation and cultural development
+  - **Operational Excellence** (8 questions) - Process optimization and operational efficiency
+  - **Performance & Results** (6 questions) - Metrics, outcomes, and financial performance
+  - **Digital Transformation** (10 questions) - Technology capabilities and digital readiness
+- QuestionManager completely refactored from global singleton to assessment-specific context with robust error handling
+- QuestionEditor component enhanced for per-assessment editing with context indicators, useMemo optimization, and performance improvements
+- OrganizationalAssessmentManager updated with flexible question sources supporting multiple initialization options:
+  - **Default**: Uses Strategic Alignment template (most common use case)
+  - **Template**: Select from 6 professional strategic focus templates
+  - **Copy Assessment**: Duplicate questions from existing client assessment
+  - **Blank**: Start with empty question set for full customization
+- Consultant dashboard enhanced with individual "📝 Manage Questions" buttons per assessment showing clear context
+- Comprehensive QuestionTemplateManager with strategic focus categorization and custom template persistence
+- Question library system enabling consultants to build and reuse custom question sets
+- Robust error handling for missing assessments with graceful fallbacks and user-friendly error messages
+- Full CRUD operations: Add, Edit, Delete, Reorder questions within assessment-specific context
+- Assessment-specific question storage integrated seamlessly with existing organizational assessment architecture
+- 38 comprehensive tests covering all functionality (21 QuestionManager + 15 QuestionTemplate + 2 error handling)
+- Production-ready per-assessment question customization enabling unique strategic engagement approaches for each client
+- Maintains backwards compatibility with existing demo data and assessment structure
 
 ## Architecture Strategy
 
@@ -290,15 +304,17 @@ The platform now includes:
 - `src/components/ui/Logo.tsx` - Reusable Inbound logo component with customizable sizing and linking
 - `src/components/ui/ConsultantLogin.tsx` - Professional consultant login form with brand-consistent styling
 - `src/components/ui/ConsultantAuthGuard.tsx` - Authentication wrapper protecting consultant-only pages
-- `src/components/ui/QuestionEditor.tsx` - **NEW**: Comprehensive question management component with drag-and-drop
+- `src/components/ui/QuestionEditor.tsx` - **TRANSFORMED**: Per-assessment question management with context indicators, useMemo optimization, and assessment-specific CRUD operations
 - `src/app/privacy/[assessmentId]/page.tsx` - GDPR privacy notice with assessment-specific data
-- `src/lib/survey-logic.ts` - Core survey management with localStorage persistence (updated for dynamic questions)
-- `src/lib/question-manager.ts` - **NEW**: Question CRUD operations, validation, and localStorage persistence
-- `src/lib/organizational-assessment-manager.ts` - Organizational assessment lifecycle and data aggregation
+- `src/app/consultant/dashboard/page.tsx` - **ENHANCED**: Individual "📝 Manage Questions" buttons per assessment with state management for per-assessment editing
+- `src/lib/survey-logic.ts` - **UPDATED**: Core survey management with assessment-specific QuestionManager integration
+- `src/lib/question-manager.ts` - **COMPLETELY REFACTORED**: Assessment-specific context with robust error handling, graceful fallbacks, and seamless integration with OrganizationalAssessmentManager
+- `src/lib/question-templates.ts` - **NEW**: Strategic focus template system with QuestionTemplateManager class, 6 professional templates (54 questions), and custom template persistence
+- `src/lib/organizational-assessment-manager.ts` - **ENHANCED**: Flexible question source options, assessment-specific question storage, and integrated template system support
 - `src/lib/ai-summary.ts` - OpenAI API integration for both individual and organizational insights
 - `src/lib/demo-data.ts` - Pre-populated demo assessment for testing
 - `src/lib/consultant-auth.ts` - Consultant authentication system with localStorage session management
-- `src/lib/types.ts` - TypeScript interfaces including question management types
+- `src/lib/types.ts` - **EXPANDED**: TypeScript interfaces including QuestionTemplate, StrategicFocus, AssessmentQuestionSetup, and QuestionLibraryState types
 
 ### GDPR Compliance Architecture
 - `src/lib/gdpr-types.ts` - GDPR Article 4 definitions, legal basis framework, and privacy type system
@@ -324,16 +340,19 @@ The platform now includes:
 - Data structure mirrors planned Supabase schema for easy migration
 
 ### Testing Coverage
-- Comprehensive test suite covering all core functionality (298+ tests total)
+- Comprehensive test suite covering all core functionality (336+ tests total)
 - Component tests for SliderInput, ProgressBar, SpiderChart, SummaryCard, and QuestionEditor
 - Logic tests for survey management, question management, data persistence, and AI summary generation
 - Integration tests ensuring components work together across user flows
-- **Question Management Tests**: 28 comprehensive tests covering:
-  - QuestionManager CRUD operations and validation
-  - QuestionEditor UI interactions and form handling
-  - localStorage persistence and error handling
-  - Question reordering and category management
-  - Integration with existing survey system
+- **Per-Assessment Question Management Tests**: 38 comprehensive tests covering:
+  - **QuestionManager Tests** (21 tests): Assessment-specific CRUD operations, validation, error handling for missing assessments, graceful fallbacks, and seamless integration with OrganizationalAssessmentManager
+  - **QuestionTemplate Tests** (15 tests): Template system functionality, strategic focus categorization, custom template management, default template validation, and localStorage persistence
+  - **Error Handling Tests** (2 tests): Invalid assessment IDs, missing assessment data, and user-friendly error messages
+  - QuestionEditor UI interactions with per-assessment context and form handling
+  - localStorage persistence for assessment-specific question data
+  - Question reordering and category management within assessment scope
+  - Template selection and question source options (default, template, copy-assessment, blank)
+  - Integration testing with existing survey system and organizational assessment architecture
 - **GDPR Compliance Tests**: 67 comprehensive privacy tests covering:
   - Data classification and legal basis validation
   - Privacy configuration and data minimization compliance
@@ -345,7 +364,7 @@ The platform now includes:
   - Joint controller agreements and data processing agreements
   - Assessment-specific privacy information generation
   - Privacy notice URL routing and accessibility
-- Tests run with Jest + Testing Library + jsdom
+- Tests run with Jest + Testing Library + jsdom with 96%+ coverage across all question management functionality
 
 ## Development Notes
 
@@ -360,14 +379,29 @@ The application is now a complete organizational diagnosis platform with all eig
 ### Platform Capabilities
 The platform enables consultants like Guro to:
 - Create and manage assessments for client organizations (e.g., Stork)
-- **Customize assessment questions** with full CRUD operations and drag-and-drop reordering
+- **Customize assessment questions per individual client** with full CRUD operations within assessment-specific context
+- **Choose from 6 strategic focus templates** covering key organizational dimensions:
+  - Strategic Alignment (clarity, positioning, competitive advantage)
+  - Innovation & Growth (market expansion, innovation capabilities)
+  - Leadership & Culture (people transformation, cultural development)
+  - Operational Excellence (process optimization, efficiency)
+  - Performance & Results (metrics, outcomes, financial performance)
+  - Digital Transformation (technology capabilities, digital readiness)
+- **Flexible question initialization options**:
+  - Use default Strategic Alignment template for standard assessments
+  - Select specialized strategic focus templates for targeted insights
+  - Copy questions from existing client assessments for consistency
+  - Start with blank question set for full customization
+- **Build custom question libraries** with reusable question sets and templates
 - **Manage question categories** with existing and custom category support
+- **Drag-and-drop question reordering** within assessment-specific context
 - Distribute role-specific survey links to management and employees
 - Track participation in real-time with lifecycle management controls
-- Analyze perception gaps between management and employee perspectives
-- Generate AI-powered strategic recommendations for organizational alignment
+- Analyze perception gaps between management and employee perspectives using customized question frameworks
+- Generate AI-powered strategic recommendations for organizational alignment based on client-specific questions
 - Present professional, client-ready results to different stakeholder groups
-- **Reset to default questions** when starting fresh assessments
+- **Reset to strategic focus templates** when starting fresh or pivoting assessment focus
+- **Maintain question consistency** across multiple assessments for the same client or compare approaches across different clients
 
 ### Technical Foundation
 Current localStorage persistence enables immediate testing and demonstration without database setup. All data structures are designed for seamless Supabase migration when moving to production. The role-based access control system will maintain privacy-first design principles while providing powerful comparative analytics for consultants.
