@@ -1,53 +1,107 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import SliderInput from '@/components/ui/SliderInput'
 import ProgressBar from '@/components/ui/ProgressBar'
 import { SurveyManager } from '@/lib/survey-logic'
-import { ParticipantSession, SliderValue, Question } from '@/lib/types'
+import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
+import { 
+  ParticipantSession, 
+  SliderValue, 
+  Question, 
+  ParticipantRole,
+  ParticipantResponse 
+} from '@/lib/types'
 
 interface SurveyPageProps {
   params: { id: string }
 }
 
 export default function SurveyPage({ params }: SurveyPageProps) {
-  const { id: surveyId } = params
+  const { id: assessmentId } = params
   const router = useRouter()
-  const [manager] = useState(() => new SurveyManager(surveyId))
+  const searchParams = useSearchParams()
+  const role = searchParams.get('role') as ParticipantRole | null
+  
+  const [surveyManager] = useState(() => new SurveyManager(assessmentId))
+  const [assessmentManager] = useState(() => new OrganizationalAssessmentManager())
   
   const [session, setSession] = useState<ParticipantSession | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [currentValue, setCurrentValue] = useState<SliderValue | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isOrganizationalAssessment, setIsOrganizationalAssessment] = useState(false)
 
   // Initialize or load existing session
   useEffect(() => {
     try {
-      let participantSession = manager.getStoredSession()
+      // Check if this is an organizational assessment
+      const assessment = assessmentManager.getAssessment(assessmentId)
+      const isOrgAssessment = assessment !== null
+      setIsOrganizationalAssessment(isOrgAssessment)
+
+      if (isOrgAssessment && !role) {
+        setError('This is an organizational assessment. Please access through a role-specific link.')
+        setIsLoading(false)
+        return
+      }
+
+      if (isOrgAssessment && role && assessment?.status !== 'collecting') {
+        setError('This assessment is no longer accepting responses.')
+        setIsLoading(false)
+        return
+      }
+
+      // Generate session storage key that includes role for organizational assessments
+      const sessionKey = isOrgAssessment && role 
+        ? `${assessmentId}-${role}-${Date.now().toString().slice(-6)}`
+        : assessmentId
+
+      let participantSession = surveyManager.getStoredSession()
       
       if (!participantSession) {
-        // For demo purposes, auto-create a session
-        // In production, this would come from user input
-        participantSession = manager.initializeSurvey(
-          surveyId,
+        participantSession = surveyManager.initializeSurvey(
+          sessionKey,
           `participant-${Date.now()}`,
-          'General'
+          role === 'management' ? 'Management' : role === 'employee' ? 'Employee' : 'General'
         )
       }
 
       setSession(participantSession)
       
-      const question = manager.getCurrentQuestion(participantSession)
+      const question = surveyManager.getCurrentQuestion(participantSession)
       setCurrentQuestion(question)
       
       if (question) {
-        const savedResponse = manager.getCurrentResponse(participantSession)
+        const savedResponse = surveyManager.getCurrentResponse(participantSession)
         setCurrentValue(savedResponse)
-      } else if (manager.isComplete(participantSession)) {
-        // Survey is complete, redirect to results
-        router.push(`/results/${surveyId}`)
+      } else if (surveyManager.isComplete(participantSession)) {
+        // Survey is complete, redirect based on type and role
+        if (isOrgAssessment) {
+          // For organizational assessments, save as ParticipantResponse and redirect appropriately
+          if (role) {
+            const participantResponse: ParticipantResponse = {
+              ...participantSession,
+              role,
+              assessmentId
+            }
+            assessmentManager.addParticipantResponse(assessmentId, participantResponse)
+          }
+          
+          // Redirect based on role
+          if (role === 'employee') {
+            router.push(`/survey/complete?type=employee`)
+          } else if (role === 'management') {
+            router.push(`/management/results/${assessmentId}`)
+          } else {
+            router.push(`/consultant/results/${assessmentId}`)
+          }
+        } else {
+          // Individual assessment
+          router.push(`/results/${assessmentId}`)
+        }
         return
       }
       
@@ -56,7 +110,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       setError(err instanceof Error ? err.message : 'Failed to initialize survey')
       setIsLoading(false)
     }
-  }, [surveyId, manager, router])
+  }, [assessmentId, role, surveyManager, assessmentManager, router])
 
   const handleValueChange = (value: SliderValue) => {
     setCurrentValue(value)
@@ -67,24 +121,46 @@ export default function SurveyPage({ params }: SurveyPageProps) {
 
     try {
       // Save current response
-      const updatedSession = manager.saveResponse(session, currentValue)
+      const updatedSession = surveyManager.saveResponse(session, currentValue)
       
       // Navigate to next question
-      const nextSession = manager.navigateToNext(updatedSession)
+      const nextSession = surveyManager.navigateToNext(updatedSession)
       setSession(nextSession)
       
       // Check if survey is complete
-      if (manager.isComplete(nextSession)) {
-        router.push(`/results/${surveyId}`)
+      if (surveyManager.isComplete(nextSession)) {
+        if (isOrganizationalAssessment) {
+          // For organizational assessments, save as ParticipantResponse and redirect appropriately
+          if (role) {
+            const participantResponse: ParticipantResponse = {
+              ...nextSession,
+              role,
+              assessmentId
+            }
+            assessmentManager.addParticipantResponse(assessmentId, participantResponse)
+          }
+          
+          // Redirect based on role
+          if (role === 'employee') {
+            router.push(`/survey/complete?type=employee`)
+          } else if (role === 'management') {
+            router.push(`/management/results/${assessmentId}`)
+          } else {
+            router.push(`/consultant/results/${assessmentId}`)
+          }
+        } else {
+          // Individual assessment
+          router.push(`/results/${assessmentId}`)
+        }
         return
       }
       
       // Load next question
-      const nextQuestion = manager.getCurrentQuestion(nextSession)
+      const nextQuestion = surveyManager.getCurrentQuestion(nextSession)
       setCurrentQuestion(nextQuestion)
       
       // Reset slider for next question
-      const nextResponse = manager.getCurrentResponse(nextSession)
+      const nextResponse = surveyManager.getCurrentResponse(nextSession)
       setCurrentValue(nextResponse)
       
     } catch (err) {
@@ -102,15 +178,15 @@ export default function SurveyPage({ params }: SurveyPageProps) {
         currentQuestionIndex: session.currentQuestionIndex - 1
       }
       
-      manager.saveSession(prevSession)
+      surveyManager.saveSession(prevSession)
       setSession(prevSession)
       
       // Load previous question
-      const prevQuestion = manager.getCurrentQuestion(prevSession)
+      const prevQuestion = surveyManager.getCurrentQuestion(prevSession)
       setCurrentQuestion(prevQuestion)
       
       // Load previous response
-      const prevResponse = manager.getCurrentResponse(prevSession)
+      const prevResponse = surveyManager.getCurrentResponse(prevSession)
       setCurrentValue(prevResponse)
       
     } catch (err) {
@@ -162,7 +238,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
     )
   }
 
-  const progress = manager.calculateProgress(session)
+  const progress = surveyManager.calculateProgress(session)
   const canGoBack = session.currentQuestionIndex > 0
   const canGoNext = currentValue !== null
 
@@ -172,10 +248,16 @@ export default function SurveyPage({ params }: SurveyPageProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Strategic Assessment
+            {isOrganizationalAssessment 
+              ? `Organizational Assessment${role ? ` - ${role === 'management' ? 'Management' : 'Employee'} View` : ''}`
+              : 'Strategic Assessment'
+            }
           </h1>
           <p className="text-gray-600">
-            Please rate each statement based on your experience
+            {isOrganizationalAssessment 
+              ? `Please rate each statement based on your ${role === 'management' ? 'leadership' : 'employee'} perspective`
+              : 'Please rate each statement based on your experience'
+            }
           </p>
         </div>
 

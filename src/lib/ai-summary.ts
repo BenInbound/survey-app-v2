@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
 import { CategoryAverage } from '@/components/ui/SpiderChart'
+import { OrganizationalAssessment, ComparativeAnalysis } from './types'
 
 interface SummaryContext {
   categoryAverages: CategoryAverage[]
@@ -91,5 +92,87 @@ export function getSummaryStatistics(categoryAverages: CategoryAverage[], overal
     lowestCategory,
     scoreDistribution,
     overallPerformance: overallAverage >= 7 ? 'strong' : overallAverage >= 5 ? 'moderate' : 'needs_attention'
+  }
+}
+
+export async function generateOrganizationalSummary(
+  assessment: OrganizationalAssessment,
+  comparativeAnalysis: ComparativeAnalysis
+): Promise<string> {
+  const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY
+  
+  if (!apiKey) {
+    throw new Error('OpenAI API key not found. Please set NEXT_PUBLIC_OPENAI_API_KEY in your environment variables.')
+  }
+
+  const openai = new OpenAI({
+    apiKey,
+    dangerouslyAllowBrowser: true
+  })
+
+  const prompt = `You are a strategic management consultant analyzing organizational assessment data for ${assessment.organizationName}. 
+
+ASSESSMENT DATA:
+- Management responses: ${assessment.responseCount.management} participants
+- Employee responses: ${assessment.responseCount.employee} participants
+- Overall alignment score: ${comparativeAnalysis.overallAlignment.toFixed(1)}%
+
+DETAILED GAP ANALYSIS:
+${comparativeAnalysis.gapAnalysis.map(gap => 
+  `${gap.category}: Management ${gap.managementScore.toFixed(1)}, Employee ${gap.employeeScore.toFixed(1)}, Gap: ${gap.gap.toFixed(1)} (${gap.significance} significance)`
+).join('\n')}
+
+CRITICAL GAPS:
+${comparativeAnalysis.criticalGaps.length > 0 ? comparativeAnalysis.criticalGaps.join(', ') : 'None identified'}
+
+Please provide a comprehensive strategic analysis that includes:
+
+1. EXECUTIVE SUMMARY (2-3 sentences)
+   - Overall organizational health assessment
+   - Key finding about management-employee alignment
+
+2. CRITICAL INSIGHTS (3-4 key points)
+   - Most significant perception gaps and their implications
+   - Areas where alignment is strong
+   - Strategic risks from misalignment
+
+3. STRATEGIC RECOMMENDATIONS (4-5 actionable items)
+   - Immediate actions to address critical gaps
+   - Communication strategies to improve alignment  
+   - Long-term organizational development priorities
+
+4. IMPLEMENTATION PRIORITIES
+   - What to tackle first and why
+   - Success metrics to track progress
+
+Format your response in clear sections with headers. Focus on actionable insights that leadership can immediately implement. Be specific about the business impact of perception gaps.`
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert organizational development consultant specializing in strategic alignment analysis. Provide actionable, business-focused insights.'
+        },
+        {
+          role: 'user', 
+          content: prompt
+        }
+      ],
+      max_tokens: 1500,
+      temperature: 0.7
+    })
+
+    const summary = completion.choices[0]?.message?.content
+
+    if (!summary) {
+      throw new Error('No summary generated from OpenAI API')
+    }
+
+    return summary.trim()
+  } catch (error) {
+    console.error('Error generating organizational summary:', error)
+    throw new Error('Failed to generate organizational insights. Please try again later.')
   }
 }

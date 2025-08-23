@@ -59,3 +59,63 @@ export interface ProgressBarProps {
   progress: SurveyProgress
   animated?: boolean
 }
+
+// Organizational Assessment Types
+export type ParticipantRole = 'management' | 'employee'
+export type AssessmentStatus = 'collecting' | 'ready' | 'locked'
+
+export interface CategoryAverage {
+  category: string
+  average: number
+  responses: number
+}
+
+export interface AggregatedResponses {
+  categoryAverages: CategoryAverage[]
+  overallAverage: number
+  responseCount: number
+}
+
+export interface OrganizationalAssessment {
+  id: string
+  organizationName: string
+  consultantId: string
+  status: AssessmentStatus
+  created: Date
+  lockedAt?: Date
+  
+  // Anonymous aggregated data only
+  managementResponses: AggregatedResponses
+  employeeResponses: AggregatedResponses
+  responseCount: { management: number, employee: number }
+}
+
+export interface ParticipantResponse extends ParticipantSession {
+  role: ParticipantRole
+  assessmentId: string
+}
+
+export interface AssessmentParticipationStats {
+  managementInvited: number
+  managementCompleted: number
+  employeeInvited: number
+  employeeCompleted: number
+  completionRate: {
+    management: number
+    employee: number
+    overall: number
+  }
+}
+
+export interface ComparativeAnalysis {
+  gapAnalysis: {
+    category: string
+    managementScore: number
+    employeeScore: number
+    gap: number
+    significance: 'high' | 'medium' | 'low'
+  }[]
+  overallAlignment: number
+  criticalGaps: string[]
+  recommendations: string[]
+}
