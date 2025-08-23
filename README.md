@@ -27,6 +27,12 @@ Visit `http://localhost:3000` to access the platform.
 - Assessment lifecycle management
 - Professional client presentation dashboards
 
+### ✅ Consultant Authentication
+- Password-protected consultant dashboard and admin portal
+- Secure session management with 24-hour expiration
+- Professional login experience with automatic logout
+- Seamless navigation between protected areas
+
 ## 🔧 Commands
 
 - `npm run dev` - Start development server
@@ -37,12 +43,15 @@ Visit `http://localhost:3000` to access the platform.
 
 ## 📊 Quick Demo
 
+**⚠️ Consultant areas require authentication (password: `INBOUND2025`)**
+
 1. **Individual Assessment**: Visit `/survey/stork-assessment`
 2. **Organizational Demo**: 
    - Management: `/survey/demo-org?role=management`
    - Employee: `/survey/demo-org?role=employee`
-   - Results: `/consultant/results/demo-org`
-3. **Consultant Dashboard**: `/consultant/dashboard`
+   - Results: `/consultant/results/demo-org` (requires login)
+3. **Consultant Dashboard**: `/consultant/dashboard` (requires login)
+4. **Admin Portal**: `/admin` (requires login)
 
 ## 📚 Documentation
 
