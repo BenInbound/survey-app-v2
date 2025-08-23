@@ -6,10 +6,12 @@ import {
   ParticipantResponse,
   ParticipantRole 
 } from './types'
+import { AccessController } from './access-control'
 
 export class OrganizationalAssessmentManager {
   private readonly STORAGE_KEY = 'organizational-assessments'
   private readonly RESPONSES_KEY = 'organizational-responses'
+  private readonly accessController = new AccessController()
 
   createAssessment(organizationName: string, consultantId: string, id?: string): OrganizationalAssessment {
     const assessment: OrganizationalAssessment = {
@@ -18,6 +20,7 @@ export class OrganizationalAssessmentManager {
       consultantId,
       status: 'collecting',
       created: new Date(),
+      accessCode: this.accessController.generateAccessCode(organizationName),
       managementResponses: {
         categoryAverages: [],
         overallAverage: 0,
@@ -46,7 +49,9 @@ export class OrganizationalAssessmentManager {
       return assessments.map(a => ({
         ...a,
         created: new Date(a.created),
-        lockedAt: a.lockedAt ? new Date(a.lockedAt) : undefined
+        lockedAt: a.lockedAt ? new Date(a.lockedAt) : undefined,
+        codeExpiration: a.codeExpiration ? new Date(a.codeExpiration) : undefined,
+        codeRegeneratedAt: a.codeRegeneratedAt ? new Date(a.codeRegeneratedAt) : undefined
       }))
     } catch {
       return []
@@ -67,9 +72,30 @@ export class OrganizationalAssessmentManager {
     assessment.status = status
     if (status === 'locked') {
       assessment.lockedAt = new Date()
+      const expiredAssessment = this.accessController.expireAccessCode(assessment)
+      Object.assign(assessment, expiredAssessment)
     }
     
     this.saveAllAssessments(assessments)
+  }
+
+  lockAssessmentAndExpireCode(assessmentId: string): void {
+    this.updateAssessmentStatus(assessmentId, 'locked')
+  }
+
+  regenerateAccessCode(assessmentId: string): string {
+    const assessment = this.getAssessment(assessmentId)
+    if (!assessment) throw new Error('Assessment not found')
+
+    const updatedAssessment = this.accessController.regenerateAccessCode(assessment)
+    this.saveAssessment(updatedAssessment)
+    
+    return updatedAssessment.accessCode
+  }
+
+  validateAccessCode(code: string): import('./types').AccessCodeValidation {
+    const assessments = this.getAllAssessments()
+    return this.accessController.validateAccessCode(code, assessments)
   }
 
   addParticipantResponse(assessmentId: string, response: ParticipantResponse): void {
@@ -196,7 +222,7 @@ export class OrganizationalAssessmentManager {
     localStorage.setItem(this.RESPONSES_KEY, JSON.stringify(responses))
   }
 
-  private saveAssessment(assessment: OrganizationalAssessment): void {
+  saveAssessment(assessment: OrganizationalAssessment): void {
     const assessments = this.getAllAssessments()
     const existingIndex = assessments.findIndex(a => a.id === assessment.id)
     

@@ -84,6 +84,11 @@ export interface OrganizationalAssessment {
   created: Date
   lockedAt?: Date
   
+  // Access control
+  accessCode: string
+  codeExpiration?: Date
+  codeRegeneratedAt?: Date
+  
   // Anonymous aggregated data only
   managementResponses: AggregatedResponses
   employeeResponses: AggregatedResponses
@@ -118,4 +123,13 @@ export interface ComparativeAnalysis {
   overallAlignment: number
   criticalGaps: string[]
   recommendations: string[]
+}
+
+export interface AccessCodeValidation {
+  code: string
+  assessmentId: string
+  organizationName: string
+  isValid: boolean
+  isExpired?: boolean
+  expiresAt?: Date
 }

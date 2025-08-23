@@ -14,6 +14,151 @@ import {
   ParticipantResponse 
 } from '@/lib/types'
 
+// Role-specific landing page components
+function EmployeeLandingPage({ organizationName, onStart }: { organizationName: string; onStart: () => void }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {organizationName} Strategic Assessment
+          </h1>
+          <p className="text-lg text-gray-600 mb-6">
+            Your Voice Matters - Help Shape Our Future
+          </p>
+        </div>
+
+        <div className="space-y-4 mb-8">
+          <div className="flex items-start space-x-3">
+            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Completely Anonymous</p>
+              <p className="text-sm text-gray-600">Your individual responses are never shared or identified</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Quick & Simple</p>
+              <p className="text-sm text-gray-600">Takes just 3-4 minutes to complete</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Makes a Difference</p>
+              <p className="text-sm text-gray-600">Your honest feedback helps shape {organizationName}&apos;s future direction</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-green-50 rounded-lg p-4 mb-6">
+          <p className="text-sm text-green-800 leading-relaxed">
+            <strong>Your Privacy is Protected:</strong> This assessment is conducted by external consultants. 
+            Your individual answers will never be seen by {organizationName} management - only aggregated, anonymous insights.
+          </p>
+        </div>
+
+        <button
+          onClick={onStart}
+          className="w-full bg-green-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-green-700 transition-colors"
+        >
+          Begin Anonymous Assessment
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ManagementLandingPage({ organizationName, onStart }: { organizationName: string; onStart: () => void }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {organizationName} Leadership Assessment
+          </h1>
+          <p className="text-lg text-gray-600 mb-6">
+            Strategic Organizational Health Initiative
+          </p>
+        </div>
+
+        <div className="space-y-4 mb-8">
+          <div className="flex items-start space-x-3">
+            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Strategic Focus</p>
+              <p className="text-sm text-gray-600">Assess organizational health across key strategic dimensions</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Leadership Perspective</p>
+              <p className="text-sm text-gray-600">Share your management viewpoint on organizational performance</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Strategic Insights</p>
+              <p className="text-sm text-gray-600">Contribute to data-driven organizational improvement initiatives</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 rounded-lg p-4 mb-6">
+          <p className="text-sm text-blue-800 leading-relaxed">
+            <strong>Professional Consultation:</strong> Your responses will be analyzed by our strategy consultants 
+            to provide organizational insights and recommendations through facilitated leadership sessions.
+          </p>
+        </div>
+
+        <button
+          onClick={onStart}
+          className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-colors"
+        >
+          Begin Leadership Assessment
+        </button>
+      </div>
+    </div>
+  )
+}
+
 interface SurveyPageProps {
   params: { id: string }
 }
@@ -23,6 +168,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const role = searchParams.get('role') as ParticipantRole | null
+  const code = searchParams.get('code')
   
   const [surveyManager] = useState(() => new SurveyManager(assessmentId))
   const [assessmentManager] = useState(() => new OrganizationalAssessmentManager())
@@ -32,85 +178,84 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const [currentValue, setCurrentValue] = useState<SliderValue | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isOrganizationalAssessment, setIsOrganizationalAssessment] = useState(false)
+  const [assessment, setAssessment] = useState<any>(null)
+  const [showLandingPage, setShowLandingPage] = useState(true)
+  const [surveyStarted, setSurveyStarted] = useState(false)
 
   // Initialize or load existing session
   useEffect(() => {
     try {
-      // Check if this is an organizational assessment
-      const assessment = assessmentManager.getAssessment(assessmentId)
-      const isOrgAssessment = assessment !== null
-      setIsOrganizationalAssessment(isOrgAssessment)
+      // Validate access code first
+      if (!code) {
+        router.push(`/survey/${assessmentId}/access?role=${role || 'employee'}`)
+        return
+      }
 
-      if (isOrgAssessment && !role) {
+      // Validate the access code
+      const codeValidation = assessmentManager.validateAccessCode(code)
+      if (!codeValidation.isValid) {
+        setError('Invalid or expired access code. Please contact your organization.')
+        setIsLoading(false)
+        return
+      }
+
+      // Get the assessment details
+      const foundAssessment = assessmentManager.getAssessment(codeValidation.assessmentId)
+      if (!foundAssessment) {
+        setError('Assessment not found.')
+        setIsLoading(false)
+        return
+      }
+
+      setAssessment(foundAssessment)
+
+      if (!role) {
         setError('This is an organizational assessment. Please access through a role-specific link.')
         setIsLoading(false)
         return
       }
 
-      if (isOrgAssessment && role && assessment?.status !== 'collecting') {
+      if (foundAssessment.status !== 'collecting') {
         setError('This assessment is no longer accepting responses.')
         setIsLoading(false)
         return
       }
 
-      // Generate session storage key that includes role for organizational assessments
-      const sessionKey = isOrgAssessment && role 
-        ? `${assessmentId}-${role}-${Date.now().toString().slice(-6)}`
-        : assessmentId
-
-      let participantSession = surveyManager.getStoredSession()
+      setIsLoading(false)
       
-      if (!participantSession) {
-        participantSession = surveyManager.initializeSurvey(
-          sessionKey,
-          `participant-${Date.now()}`,
-          role === 'management' ? 'Management' : role === 'employee' ? 'Employee' : 'General'
-        )
-      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to initialize survey')
+      setIsLoading(false)
+    }
+  }, [assessmentId, role, code, assessmentManager, router])
+
+  // Handle starting the actual survey
+  const handleStartSurvey = () => {
+    try {
+      // Generate session storage key that includes role
+      const sessionKey = `${assessmentId}-${role}-${Date.now().toString().slice(-6)}`
+
+      const participantSession = surveyManager.initializeSurvey(
+        sessionKey,
+        `participant-${Date.now()}`,
+        role === 'management' ? 'Management' : role === 'employee' ? 'Employee' : 'General'
+      )
 
       setSession(participantSession)
       
       const question = surveyManager.getCurrentQuestion(participantSession)
       setCurrentQuestion(question)
       
-      if (question) {
-        const savedResponse = surveyManager.getCurrentResponse(participantSession)
-        setCurrentValue(savedResponse)
-      } else if (surveyManager.isComplete(participantSession)) {
-        // Survey is complete, redirect based on type and role
-        if (isOrgAssessment) {
-          // For organizational assessments, save as ParticipantResponse and redirect appropriately
-          if (role) {
-            const participantResponse: ParticipantResponse = {
-              ...participantSession,
-              role,
-              assessmentId
-            }
-            assessmentManager.addParticipantResponse(assessmentId, participantResponse)
-          }
-          
-          // Redirect based on role
-          if (role === 'employee') {
-            router.push(`/survey/complete?type=employee`)
-          } else if (role === 'management') {
-            router.push(`/management/results/${assessmentId}`)
-          } else {
-            router.push(`/consultant/results/${assessmentId}`)
-          }
-        } else {
-          // Individual assessment
-          router.push(`/results/${assessmentId}`)
-        }
-        return
-      }
+      const savedResponse = surveyManager.getCurrentResponse(participantSession)
+      setCurrentValue(savedResponse)
       
-      setIsLoading(false)
+      setShowLandingPage(false)
+      setSurveyStarted(true)
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to initialize survey')
-      setIsLoading(false)
+      setError(err instanceof Error ? err.message : 'Failed to start survey')
     }
-  }, [assessmentId, role, surveyManager, assessmentManager, router])
+  }
 
   const handleValueChange = (value: SliderValue) => {
     setCurrentValue(value)
@@ -129,29 +274,18 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       
       // Check if survey is complete
       if (surveyManager.isComplete(nextSession)) {
-        if (isOrganizationalAssessment) {
-          // For organizational assessments, save as ParticipantResponse and redirect appropriately
-          if (role) {
-            const participantResponse: ParticipantResponse = {
-              ...nextSession,
-              role,
-              assessmentId
-            }
-            assessmentManager.addParticipantResponse(assessmentId, participantResponse)
+        // Save as ParticipantResponse for organizational assessment
+        if (role) {
+          const participantResponse: ParticipantResponse = {
+            ...nextSession,
+            role,
+            assessmentId
           }
-          
-          // Redirect based on role
-          if (role === 'employee') {
-            router.push(`/survey/complete?type=employee`)
-          } else if (role === 'management') {
-            router.push(`/management/results/${assessmentId}`)
-          } else {
-            router.push(`/consultant/results/${assessmentId}`)
-          }
-        } else {
-          // Individual assessment
-          router.push(`/results/${assessmentId}`)
+          assessmentManager.addParticipantResponse(assessmentId, participantResponse)
         }
+        
+        // All participants go to thank you page - no results access
+        router.push(`/survey/complete?type=${role || 'employee'}`)
         return
       }
       
@@ -227,12 +361,22 @@ export default function SurveyPage({ params }: SurveyPageProps) {
     )
   }
 
+  // Show role-specific landing page first
+  if (showLandingPage && assessment && !surveyStarted) {
+    if (role === 'employee') {
+      return <EmployeeLandingPage organizationName={assessment.organizationName} onStart={handleStartSurvey} />
+    } else if (role === 'management') {
+      return <ManagementLandingPage organizationName={assessment.organizationName} onStart={handleStartSurvey} />
+    }
+  }
+
+  // Survey hasn't started yet or completed
   if (!session || !currentQuestion) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900">Survey Complete</h2>
-          <p className="text-gray-600 mt-2">Redirecting to results...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading survey...</p>
         </div>
       </div>
     )
@@ -248,16 +392,10 @@ export default function SurveyPage({ params }: SurveyPageProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {isOrganizationalAssessment 
-              ? `Organizational Assessment${role ? ` - ${role === 'management' ? 'Management' : 'Employee'} View` : ''}`
-              : 'Strategic Assessment'
-            }
+            {assessment?.organizationName} Assessment - {role === 'management' ? 'Leadership' : 'Employee'} View
           </h1>
           <p className="text-gray-600">
-            {isOrganizationalAssessment 
-              ? `Please rate each statement based on your ${role === 'management' ? 'leadership' : 'employee'} perspective`
-              : 'Please rate each statement based on your experience'
-            }
+            Please rate each statement based on your {role === 'management' ? 'leadership' : 'employee'} perspective
           </p>
         </div>
 

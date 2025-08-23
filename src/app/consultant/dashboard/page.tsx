@@ -45,6 +45,17 @@ export default function ConsultantDashboard() {
     loadAssessments()
   }
 
+  const handleRegenerateCode = (assessmentId: string) => {
+    try {
+      assessmentManager.regenerateAccessCode(assessmentId)
+      loadAssessments()
+      // Show success feedback
+      alert('Access code regenerated successfully!')
+    } catch (error) {
+      alert('Failed to regenerate access code. Please try again.')
+    }
+  }
+
   const getStatusColor = (status: AssessmentStatus) => {
     switch (status) {
       case 'collecting': return 'bg-yellow-100 text-yellow-800'
@@ -53,9 +64,15 @@ export default function ConsultantDashboard() {
     }
   }
 
-  const generateSurveyLink = (assessmentId: string, role: 'management' | 'employee') => {
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text)
+    // Show success feedback
+    alert(`${type} copied to clipboard!`)
+  }
+
+  const getAccessUrl = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    return `${baseUrl}/survey/${assessmentId}?role=${role}`
+    return `${baseUrl}/survey/[assessment-id]/access`
   }
 
   return (
@@ -177,6 +194,54 @@ export default function ConsultantDashboard() {
                     </div>
                   </div>
 
+                  {/* Access Code Section */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-blue-900">
+                        <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Assessment Access Code
+                      </h4>
+                      <button
+                        onClick={() => handleRegenerateCode(assessment.id)}
+                        disabled={assessment.status === 'locked'}
+                        className={`text-sm px-3 py-1 rounded ${
+                          assessment.status === 'locked' 
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                            : 'bg-blue-200 text-blue-800 hover:bg-blue-300'
+                        }`}
+                      >
+                        Regenerate Code
+                      </button>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="font-mono text-2xl font-bold text-blue-900 tracking-wider">
+                          {assessment.accessCode}
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(assessment.accessCode, 'Access code')}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                          Copy Code
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 text-sm text-blue-800">
+                      <strong>Distribution Instructions:</strong>
+                      <ol className="list-decimal list-inside mt-2 space-y-1">
+                        <li>Share this access code with your client contact (HR/Management)</li>
+                        <li>Client distributes code to employees and management via internal channels</li>
+                        <li>Participants visit: <code className="bg-blue-100 px-1 rounded">{getAccessUrl()}</code></li>
+                        <li>Participants enter the access code to begin their assessment</li>
+                      </ol>
+                    </div>
+                  </div>
+
+                  {/* Participation Statistics */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <h4 className="font-medium text-gray-900 mb-2">Management Participation</h4>
@@ -184,15 +249,6 @@ export default function ConsultantDashboard() {
                         {assessment.responseCount.management}
                       </div>
                       <p className="text-sm text-gray-600">responses received</p>
-                      <div className="mt-3">
-                        <div className="text-sm text-gray-700 mb-1">Survey Link:</div>
-                        <input
-                          type="text"
-                          readOnly
-                          value={generateSurveyLink(assessment.id, 'management')}
-                          className="w-full text-xs bg-white border rounded px-2 py-1"
-                        />
-                      </div>
                     </div>
 
                     <div className="bg-gray-50 p-4 rounded-lg">
@@ -201,15 +257,6 @@ export default function ConsultantDashboard() {
                         {assessment.responseCount.employee}
                       </div>
                       <p className="text-sm text-gray-600">responses received</p>
-                      <div className="mt-3">
-                        <div className="text-sm text-gray-700 mb-1">Survey Link:</div>
-                        <input
-                          type="text"
-                          readOnly
-                          value={generateSurveyLink(assessment.id, 'employee')}
-                          className="w-full text-xs bg-white border rounded px-2 py-1"
-                        />
-                      </div>
                     </div>
                   </div>
 
