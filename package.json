@@ -11,6 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.56.0",
     "chart.js": "^4.4.0",
     "next": "14.2.5",
     "openai": "^5.15.0",
