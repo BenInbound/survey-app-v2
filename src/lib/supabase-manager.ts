@@ -217,6 +217,166 @@ export class SupabaseManager {
     }
   }
 
+  /**
+   * Load participant responses from database for an assessment
+   */
+  async loadParticipantResponses(assessmentId: string): Promise<ParticipantResponse[]> {
+    if (!supabase) {
+      return []
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('participant_responses')
+        .select('*')
+        .eq('assessment_id', assessmentId)
+
+      if (error) {
+        throw error
+      }
+
+      return data.map(this.mapDatabaseToResponse)
+    } catch (err) {
+      console.error('Failed to load responses from database:', err)
+      return []
+    }
+  }
+
+  /**
+   * Clean corrupted department data by deleting and regenerating 
+   * This is safer than trying to map corrupted values back to departments
+   */
+  async cleanCorruptedDepartmentData(assessmentId: string): Promise<{ cleaned: boolean, errors: string[] }> {
+    if (!supabase) {
+      return { cleaned: false, errors: ['Supabase not configured'] }
+    }
+
+    const errors: string[] = []
+
+    try {
+      // Load all responses to check for corruption
+      const responses = await this.loadParticipantResponses(assessmentId)
+      const corruptedResponses = responses.filter(r => 
+        r.department === 'Management' || r.department === 'Employee' || r.department === 'General'
+      )
+
+      if (corruptedResponses.length === 0) {
+        return { cleaned: false, errors: ['No corrupted data found'] }
+      }
+
+      console.log(`Found ${corruptedResponses.length} corrupted responses - cleaning database`)
+
+      // Delete ALL data for this assessment (start fresh)
+      const deleted = await this.deleteAssessmentData(assessmentId)
+      if (!deleted) {
+        return { cleaned: false, errors: ['Failed to delete corrupted data'] }
+      }
+
+      console.log(`Deleted corrupted data for assessment ${assessmentId}`)
+      
+      // For demo-org, we can regenerate with clean data
+      if (assessmentId === 'demo-org') {
+        console.log('Assessment data deleted - clean demo data will be regenerated on next access')
+        return { cleaned: true, errors: [] }
+      }
+
+      return { cleaned: true, errors: ['Data cleaned - assessment will need to be recreated manually'] }
+      
+    } catch (err) {
+      errors.push(`Clean operation failed: ${err}`)
+      return { cleaned: false, errors }
+    }
+  }
+
+  /**
+   * Diagnose corruption issues in database
+   */
+  async diagnoseDatabaseIssues(assessmentId: string): Promise<{ corruption: any, suggestions: string[] }> {
+    if (!supabase) {
+      return { corruption: null, suggestions: ['Supabase not configured'] }
+    }
+
+    try {
+      const responses = await this.loadParticipantResponses(assessmentId)
+      const assessment = await this.loadAssessment(assessmentId)
+      
+      const corruptedResponses = responses.filter(r => 
+        r.department === 'Management' || r.department === 'Employee' || r.department === 'General'
+      )
+      
+      const validDepartments = assessment?.departments.map(d => d.id) || []
+      const responseDepartments = Array.from(new Set(responses.map(r => r.department)))
+      
+      const suggestions = []
+      if (corruptedResponses.length > 0) {
+        suggestions.push(`Found ${corruptedResponses.length} corrupted responses with role-based department values`)
+        suggestions.push('Recommend using cleanCorruptedDepartmentData() to delete and regenerate')
+      }
+      
+      if (assessment && assessment.departments.length === 0) {
+        suggestions.push('Assessment has no department configuration')
+      }
+
+      return {
+        corruption: {
+          totalResponses: responses.length,
+          corruptedCount: corruptedResponses.length,
+          corruptedDepartments: corruptedResponses.map(r => r.department),
+          validDepartments,
+          foundDepartments: responseDepartments
+        },
+        suggestions
+      }
+    } catch (err) {
+      return { 
+        corruption: { error: err }, 
+        suggestions: [`Diagnosis failed: ${err}`] 
+      }
+    }
+  }
+
+  /**
+   * Delete all data for an assessment from Supabase (for cleanup)
+   */
+  async deleteAssessmentData(assessmentId: string): Promise<boolean> {
+    if (!supabase) {
+      return false
+    }
+
+    try {
+      // Delete responses first (foreign key constraint)
+      await supabase
+        .from('participant_responses')
+        .delete()
+        .eq('assessment_id', assessmentId)
+
+      // Delete assessment
+      await supabase
+        .from('organizational_assessments')
+        .delete()
+        .eq('id', assessmentId)
+
+      return true
+    } catch (err) {
+      console.error('Failed to delete assessment data:', err)
+      return false
+    }
+  }
+
+  private mapDatabaseToResponse(data: any): ParticipantResponse {
+    return {
+      assessmentId: data.assessment_id,
+      participantId: data.participant_id,
+      role: data.role,
+      department: data.department,
+      surveyId: data.survey_id,
+      responses: data.responses || [],
+      currentQuestionIndex: data.current_question_index || 0,
+      completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
+      startedAt: new Date(data.started_at)
+    }
+  }
+
   private mapDatabaseToAssessment(data: any): OrganizationalAssessment {
     return {
       id: data.id,

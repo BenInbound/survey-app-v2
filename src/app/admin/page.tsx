@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { getAllSurveyData, clearAllSurveyData } from '@/lib/survey-logic'
 import { ParticipantSession } from '@/lib/types'
 import { restoreDemoAssessment, refreshDemoAssessment } from '@/lib/demo-data'
+import { supabaseManager } from '@/lib/supabase-manager'
 import Logo from '@/components/ui/Logo'
 // import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 
@@ -11,6 +12,8 @@ export default function AdminPage() {
   const [sessions, setSessions] = useState<ParticipantSession[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showConfirmClear, setShowConfirmClear] = useState(false)
+  const [dbDiagnosis, setDbDiagnosis] = useState<any>(null)
+  const [isDbLoading, setIsDbLoading] = useState(false)
 
   const loadData = () => {
     const data = getAllSurveyData()
@@ -45,6 +48,44 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error refreshing demo data:', error)
       alert('Failed to refresh demo data. Please try again.')
+    }
+  }
+
+  const handleDiagnoseDatabase = async () => {
+    setIsDbLoading(true)
+    try {
+      const diagnosis = await supabaseManager.diagnoseDatabaseIssues('demo-org')
+      setDbDiagnosis(diagnosis)
+    } catch (error) {
+      console.error('Diagnosis failed:', error)
+      alert('Failed to diagnose database issues.')
+    } finally {
+      setIsDbLoading(false)
+    }
+  }
+
+  const handleCleanDatabase = async () => {
+    const confirmed = confirm(
+      'This will DELETE all corrupted data from the Supabase database for demo-org. ' + 
+      'Clean data will be regenerated on next access. Continue?'
+    )
+    
+    if (!confirmed) return
+
+    setIsDbLoading(true)
+    try {
+      const result = await supabaseManager.cleanCorruptedDepartmentData('demo-org')
+      if (result.cleaned) {
+        alert('Database cleaned successfully! Visit the consultant results to see regenerated data.')
+        setDbDiagnosis(null) // Clear diagnosis
+      } else {
+        alert(`Clean failed: ${result.errors.join(', ')}`)
+      }
+    } catch (error) {
+      console.error('Clean failed:', error)
+      alert('Failed to clean database.')
+    } finally {
+      setIsDbLoading(false)
     }
   }
 
@@ -152,6 +193,63 @@ export default function AdminPage() {
             >
               🔄 Refresh Demo Data
             </button>
+          </div>
+        </div>
+
+        {/* Database Management */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-4">Database Management</h2>
+          <div className="space-y-4">
+            <div className="flex space-x-4">
+              <button
+                onClick={handleDiagnoseDatabase}
+                disabled={isDbLoading}
+                className="bg-info text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                title="Check Supabase database for corruption issues"
+              >
+                {isDbLoading ? '🔍 Checking...' : '🔍 Diagnose Database'}
+              </button>
+
+              <button
+                onClick={handleCleanDatabase}
+                disabled={isDbLoading}
+                className="bg-warning text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50"
+                title="Delete corrupted data from Supabase and regenerate clean data"
+              >
+                {isDbLoading ? '🧹 Cleaning...' : '🧹 Clean Database'}
+              </button>
+            </div>
+
+            {/* Database Diagnosis Results */}
+            {dbDiagnosis && (
+              <div className="mt-4 p-4 bg-neutral-50 rounded-lg">
+                <h3 className="font-semibold text-neutral-900 mb-2">Database Diagnosis Results</h3>
+                {dbDiagnosis.corruption ? (
+                  <div className="space-y-2 text-sm">
+                    <div><strong>Total Responses:</strong> {dbDiagnosis.corruption.totalResponses}</div>
+                    <div><strong>Corrupted Count:</strong> <span className={dbDiagnosis.corruption.corruptedCount > 0 ? 'text-error font-bold' : 'text-success'}>{dbDiagnosis.corruption.corruptedCount}</span></div>
+                    {dbDiagnosis.corruption.corruptedCount > 0 && (
+                      <div><strong>Corrupted Departments:</strong> {dbDiagnosis.corruption.corruptedDepartments.join(', ')}</div>
+                    )}
+                    <div><strong>Valid Departments:</strong> {dbDiagnosis.corruption.validDepartments.join(', ')}</div>
+                    <div><strong>Found Departments:</strong> {dbDiagnosis.corruption.foundDepartments.join(', ')}</div>
+                  </div>
+                ) : (
+                  <div className="text-neutral-600">No database connection or diagnosis failed</div>
+                )}
+                
+                {dbDiagnosis.suggestions.length > 0 && (
+                  <div className="mt-3">
+                    <strong>Suggestions:</strong>
+                    <ul className="list-disc list-inside text-sm text-neutral-700 mt-1">
+                      {dbDiagnosis.suggestions.map((suggestion: string, index: number) => (
+                        <li key={index}>{suggestion}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
