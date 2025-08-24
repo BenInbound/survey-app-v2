@@ -8,18 +8,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Primary - Deep Teal
+        // Primary - Hot Pink
         primary: {
-          50: '#F0FDFA',
-          100: '#CCFBF1',
-          200: '#99F6E4',
-          300: '#5EEAD4',
-          400: '#2DD4BF',
-          500: '#14B8A6',
-          600: '#0D9488',
-          700: '#0F766E',
-          800: '#115E59',
-          900: '#134E4A',
+          50: '#FFF0F6',
+          100: '#FFDEE9',
+          200: '#FFBDD3',
+          300: '#FF9BBC',
+          400: '#FF78A6',
+          500: '#FF5590',
+          600: '#ff0056',
+          700: '#E6004D',
+          800: '#CC0044',
+          900: '#B3003B',
         },
         // Secondary - Warm Amber
         secondary: {

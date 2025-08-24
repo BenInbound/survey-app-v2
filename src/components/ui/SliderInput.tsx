@@ -78,11 +78,11 @@ export default function SliderInput({
               ${value >= 3 ? '#D97706' : '#D6D3D1'} 22%,
               ${value >= 4 ? '#CA8A04' : '#D6D3D1'} 33%,
               ${value >= 5 ? '#F59E0B' : '#D6D3D1'} 44%,
-              ${value >= 6 ? '#14B8A6' : '#D6D3D1'} 55%,
-              ${value >= 7 ? '#0D9488' : '#D6D3D1'} 66%,
-              ${value >= 8 ? '#0F766E' : '#D6D3D1'} 77%,
-              ${value >= 9 ? '#134E4A' : '#D6D3D1'} 88%,
-              ${value >= 10 ? '#115E59' : '#D6D3D1'} 100%)` : undefined
+              ${value >= 6 ? '#FF5590' : '#D6D3D1'} 55%,
+              ${value >= 7 ? '#ff0056' : '#D6D3D1'} 66%,
+              ${value >= 8 ? '#E6004D' : '#D6D3D1'} 77%,
+              ${value >= 9 ? '#CC0044' : '#D6D3D1'} 88%,
+              ${value >= 10 ? '#B3003B' : '#D6D3D1'} 100%)` : undefined
           }}
         />
         
