@@ -145,10 +145,19 @@ export class OrganizationalAssessmentManager {
   }
 
   addParticipantResponse(assessmentId: string, response: ParticipantResponse): void {
+    console.log('📝 Adding participant response:', {
+      assessmentId,
+      role: response.role,
+      department: response.department,
+      participantId: response.participantId
+    })
+    
     // Store individual response
     const responses = this.getAllResponses()
     responses.push(response)
     this.saveAllResponses(responses)
+
+    console.log('📊 Total responses now:', responses.length)
 
     // Update aggregated data
     this.updateAggregatedData(assessmentId)
@@ -171,12 +180,24 @@ export class OrganizationalAssessmentManager {
   }
 
   private updateAggregatedData(assessmentId: string): void {
+    console.log('🔄 Updating aggregated data for assessment:', assessmentId)
+    
     const assessments = this.getAllAssessments()
     const assessment = assessments.find(a => a.id === assessmentId)
-    if (!assessment) return
+    if (!assessment) {
+      console.log('❌ Assessment not found:', assessmentId)
+      return
+    }
 
     const managementResponses = this.getParticipantResponses(assessmentId, 'management')
     const employeeResponses = this.getParticipantResponses(assessmentId, 'employee')
+
+    console.log('📊 Response counts:', {
+      management: managementResponses.length,
+      employee: employeeResponses.length,
+      managementDepartments: managementResponses.map(r => r.department),
+      employeeDepartments: employeeResponses.map(r => r.department)
+    })
 
     // Update legacy aggregated data (for compatibility)
     assessment.managementResponses = this.aggregateResponses(managementResponses, assessmentId)
@@ -186,10 +207,18 @@ export class OrganizationalAssessmentManager {
       employee: employeeResponses.length
     }
 
+    console.log('✅ Updated assessment responseCount:', assessment.responseCount)
+
     // NEW: Update department-specific aggregated data
     assessment.departmentData = this.aggregateDepartmentData(assessmentId)
 
     this.saveAllAssessments(assessments)
+    
+    // CRITICAL FIX: Sync updated assessment to database so dashboard can see participation counts
+    console.log('🔄 Syncing assessment to database...')
+    supabaseManager.syncAssessmentToDatabase(assessment).catch(err => {
+      console.log('Background assessment sync to database failed (localStorage still working):', err)
+    })
   }
 
   private aggregateResponses(responses: ParticipantResponse[], assessmentId?: string): AggregatedResponses {
@@ -364,6 +393,34 @@ export class OrganizationalAssessmentManager {
     
     assessment.questions = questions
     this.saveAssessment(assessment)
+    
+    // CRITICAL: Sync to database so changes persist across devices
+    supabaseManager.syncAssessmentToDatabase(assessment).catch(err => {
+      console.log('Failed to sync question updates to database:', err)
+    })
+  }
+
+  // NEW: Async version that loads from database first
+  async updateAssessmentQuestionsWithDatabase(assessmentId: string, questions: Question[]): Promise<void> {
+    const assessment = await this.getAssessmentWithDatabase(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+    
+    assessment.questions = questions
+    
+    // Save to localStorage
+    const assessments = this.getAllAssessments()
+    const index = assessments.findIndex(a => a.id === assessmentId)
+    if (index >= 0) {
+      assessments[index] = assessment
+    } else {
+      assessments.push(assessment)
+    }
+    this.saveAllAssessments(assessments)
+    
+    // Sync to database
+    await supabaseManager.syncAssessmentToDatabase(assessment)
   }
 
   // NEW: Department management methods
@@ -471,6 +528,17 @@ export class OrganizationalAssessmentManager {
 
   getAssessmentQuestions(assessmentId: string) {
     const assessment = this.getAssessment(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+    
+    // Return questions array if it exists, otherwise return empty array
+    return assessment.questions || []
+  }
+
+  // NEW: Async version that loads from database first
+  async getAssessmentQuestionsWithDatabase(assessmentId: string): Promise<Question[]> {
+    const assessment = await this.getAssessmentWithDatabase(assessmentId)
     if (!assessment) {
       throw new Error(`Assessment not found: ${assessmentId}`)
     }

@@ -20,6 +20,18 @@ export class QuestionManager {
     }
   }
 
+  // NEW: Async version that loads from database first
+  async getQuestionsAsync(): Promise<Question[]> {
+    try {
+      const questions = await this.assessmentManager.getAssessmentQuestionsWithDatabase(this.assessmentId)
+      // Ensure we always return an array
+      return Array.isArray(questions) ? questions : []
+    } catch (error) {
+      console.error('Failed to load assessment questions from database:', error)
+      throw error
+    }
+  }
+
   saveQuestions(questions: Question[]): void {
     const validation = this.validateQuestions(questions)
     if (!validation.isValid) {
@@ -28,6 +40,17 @@ export class QuestionManager {
 
     const normalizedQuestions = this.normalizeQuestions(questions)
     this.assessmentManager.updateAssessmentQuestions(this.assessmentId, normalizedQuestions)
+  }
+
+  // NEW: Async version that saves to database
+  async saveQuestionsAsync(questions: Question[]): Promise<void> {
+    const validation = this.validateQuestions(questions)
+    if (!validation.isValid) {
+      throw new Error(`Invalid questions: ${validation.errors.join(', ')}`)
+    }
+
+    const normalizedQuestions = this.normalizeQuestions(questions)
+    await this.assessmentManager.updateAssessmentQuestionsWithDatabase(this.assessmentId, normalizedQuestions)
   }
 
   addQuestion(questionData: QuestionFormData): Question {

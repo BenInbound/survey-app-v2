@@ -18,21 +18,34 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
   const [newQuestion, setNewQuestion] = useState<QuestionFormData>({ text: '', category: '' })
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   const questionManager = useMemo(() => new QuestionManager(assessmentId), [assessmentId])
 
-  const loadQuestions = useCallback(() => {
+  const loadQuestions = useCallback(async () => {
     try {
-      const currentQuestions = questionManager.getQuestions()
+      setIsLoading(true)
+      // Try async loading from database first
+      const currentQuestions = await questionManager.getQuestionsAsync()
       setQuestions(currentQuestions || [])
       setAvailableCategories(questionManager.getAvailableCategories())
       onQuestionsChange?.()
     } catch (error) {
-      console.error('Failed to load questions in QuestionEditor:', error)
-      setQuestions([])
-      setAvailableCategories([])
-      // Show user-friendly error message
-      alert(`Error loading questions for assessment ${assessmentId}: ${(error as Error).message}`)
+      console.error('Failed to load questions from database, trying localStorage:', error)
+      // Fallback to sync localStorage loading
+      try {
+        const currentQuestions = questionManager.getQuestions()
+        setQuestions(currentQuestions || [])
+        setAvailableCategories(questionManager.getAvailableCategories())
+        onQuestionsChange?.()
+      } catch (fallbackError) {
+        console.error('Failed to load questions:', fallbackError)
+        setQuestions([])
+        setAvailableCategories([])
+        alert(`Error loading questions for assessment ${assessmentId}: ${(fallbackError as Error).message}`)
+      }
+    } finally {
+      setIsLoading(false)
     }
   }, [questionManager, onQuestionsChange, assessmentId])
 
@@ -128,6 +141,19 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
     }
 
     setDraggedIndex(null)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-3 text-gray-600">Loading questions from database...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

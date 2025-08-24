@@ -52,13 +52,17 @@ The project uses a **local-first development approach** that easily migrates to 
 - `src/lib/privacy-enhanced-models.ts` - GDPR integration service for seamless privacy metadata enhancement
 - `src/app/admin/reset-demo/page.tsx` - Demo data management with GDPR-compliant access codes
 
-### Data Flow
-- Questions stored in `src/data/questions.json` (8 strategic assessment questions)
-- Survey sessions managed by `SurveyManager` class in survey-logic.ts
-- Individual responses persist in localStorage with key pattern `survey-session-{surveyId}`
-- Organizational assessments stored with keys: `organizational-assessments` and `organizational-responses`
-- Demo data uses fixed ID `demo-org` for consistent routing and testing
-- Data structure mirrors planned Supabase schema for easy migration
+### Data Flow (Hybrid Database Architecture)
+- **Primary Storage**: Supabase PostgreSQL database for multi-device support
+- **Secondary Storage**: localStorage for offline/fallback capability
+- **Dual-Write Strategy**: All data writes go to both localStorage AND database
+- **Database-First Loading**: Components load from Supabase first, fall back to localStorage
+- **Key Patterns**:
+  - Individual responses: `survey-session-{surveyId}` (localStorage)
+  - Organizational assessments: `organizational-assessments` table (database + localStorage)
+  - Participant responses: `participant_responses` table (database + localStorage)
+- **Real-time Sync**: Assessment aggregations and question updates sync to database immediately
+- **Demo data**: Fixed ID `demo-org` for consistent routing and testing
 
 ## Data Models
 
