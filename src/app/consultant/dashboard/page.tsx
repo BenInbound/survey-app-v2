@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { OrganizationalAssessment, AssessmentStatus, Department } from '@/lib/types'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
-import { createDemoAssessment, fixDemoAssessmentStatus } from '@/lib/demo-data'
+import { createDemoAssessment } from '@/lib/demo-data'
 import Logo from '@/components/ui/Logo'
 import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 import QuestionEditor from '@/components/ui/QuestionEditor'
@@ -35,7 +35,7 @@ export default function ConsultantDashboard() {
       // If demo exists, just fix its status, don't recreate it
       const demoExists = existingAssessments.some(a => a.id === 'demo-org')
       if (demoExists) {
-        fixDemoAssessmentStatus()
+        // Demo assessment will be properly configured with new createDemoAssessment() format
       }
     }
     

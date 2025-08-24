@@ -202,10 +202,9 @@ export class OrganizationalAssessmentManager {
 
     responses.forEach(response => {
       response.responses.forEach(answer => {
-        // We need to get the question to find its category
-        // For now, assume we have the questions available
+        // Get the question category from the assessment
         const questionId = answer.questionId
-        const category = this.getQuestionCategory(questionId)
+        const category = this.getQuestionCategory(questionId, responses[0]?.assessmentId)
         
         if (!categoryData[category]) {
           categoryData[category] = { sum: 0, count: 0 }
@@ -231,9 +230,21 @@ export class OrganizationalAssessmentManager {
     }
   }
 
-  private getQuestionCategory(questionId: string): string {
-    // Import questions data to get category
-    // For now, return a default mapping
+  private getQuestionCategory(questionId: string, assessmentId?: string): string {
+    // Try to get category from assessment's questions first
+    if (assessmentId) {
+      try {
+        const questions = this.getAssessmentQuestions(assessmentId)
+        const question = questions.find(q => q.id === questionId)
+        if (question) {
+          return question.category
+        }
+      } catch {
+        // Fall through to default mapping if assessment not found
+      }
+    }
+
+    // Fallback to default mapping for backward compatibility
     const categoryMap: Record<string, string> = {
       'strategy-clarity': 'Strategic Clarity',
       'market-position': 'Market Position', 

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
-import { createDemoAssessment, fixDemoAssessmentStatus } from '@/lib/demo-data'
+import { createDemoAssessment } from '@/lib/demo-data'
 
 export default function ResetDemo() {
   const router = useRouter()
@@ -15,7 +15,6 @@ export default function ResetDemo() {
       
       // Recreate demo data
       createDemoAssessment()
-      fixDemoAssessmentStatus()
       
       alert('Demo data has been reset! Access code is now: DEMO-2025-STRATEGY')
       router.push('/consultant/dashboard')
