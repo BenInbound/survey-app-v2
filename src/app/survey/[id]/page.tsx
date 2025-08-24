@@ -261,7 +261,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       const participantSession = surveyManager.initializeSurvey(
         sessionKey,
         `participant-${Date.now()}`,
-        role === 'management' ? 'Management' : role === 'employee' ? 'Employee' : 'General'
+        department || 'General'
       )
 
       setSession(participantSession)
