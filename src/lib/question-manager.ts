@@ -9,9 +9,9 @@ export class QuestionManager {
     this.assessmentId = assessmentId
   }
 
-  getQuestions(): Question[] {
+  async getQuestions(): Promise<Question[]> {
     try {
-      const questions = this.assessmentManager.getAssessmentQuestions(this.assessmentId)
+      const questions = await this.assessmentManager.getAssessmentQuestions(this.assessmentId)
       // Ensure we always return an array
       return Array.isArray(questions) ? questions : []
     } catch (error) {
@@ -20,14 +20,14 @@ export class QuestionManager {
     }
   }
 
-  // NEW: Async version that loads from database first
+  // Legacy sync method - deprecated
   async getQuestionsAsync(): Promise<Question[]> {
     try {
-      const questions = await this.assessmentManager.getAssessmentQuestionsWithDatabase(this.assessmentId)
+      const questions = await this.assessmentManager.getAssessmentQuestions(this.assessmentId)
       // Ensure we always return an array
       return Array.isArray(questions) ? questions : []
     } catch (error) {
-      console.error('Failed to load assessment questions from database:', error)
+      console.error('Failed to load assessment questions:', error)
       throw error
     }
   }
@@ -50,11 +50,11 @@ export class QuestionManager {
     }
 
     const normalizedQuestions = this.normalizeQuestions(questions)
-    await this.assessmentManager.updateAssessmentQuestionsWithDatabase(this.assessmentId, normalizedQuestions)
+    await this.assessmentManager.updateAssessmentQuestions(this.assessmentId, normalizedQuestions)
   }
 
-  addQuestion(questionData: QuestionFormData): Question {
-    const questions = this.getQuestions()
+  async addQuestion(questionData: QuestionFormData): Promise<Question> {
+    const questions = await this.getQuestions()
     const newQuestion: Question = {
       id: this.generateQuestionId(questionData.text),
       text: questionData.text.trim(),
@@ -63,12 +63,12 @@ export class QuestionManager {
     }
 
     const updatedQuestions = [...questions, newQuestion]
-    this.saveQuestions(updatedQuestions)
+    await this.saveQuestions(updatedQuestions)
     return newQuestion
   }
 
-  updateQuestion(questionId: string, questionData: QuestionFormData): Question {
-    const questions = this.getQuestions()
+  async updateQuestion(questionId: string, questionData: QuestionFormData): Promise<Question> {
+    const questions = await this.getQuestions()
     const questionIndex = questions.findIndex(q => q.id === questionId)
     
     if (questionIndex === -1) {
@@ -83,12 +83,12 @@ export class QuestionManager {
 
     const updatedQuestions = [...questions]
     updatedQuestions[questionIndex] = updatedQuestion
-    this.saveQuestions(updatedQuestions)
+    await this.saveQuestions(updatedQuestions)
     return updatedQuestion
   }
 
-  deleteQuestion(questionId: string): void {
-    const questions = this.getQuestions()
+  async deleteQuestion(questionId: string): Promise<void> {
+    const questions = await this.getQuestions()
     const filteredQuestions = questions.filter(q => q.id !== questionId)
     
     if (filteredQuestions.length === questions.length) {
@@ -99,11 +99,11 @@ export class QuestionManager {
       throw new Error('Cannot delete the last question')
     }
 
-    this.saveQuestions(filteredQuestions)
+    await this.saveQuestions(filteredQuestions)
   }
 
-  reorderQuestions(questionIds: string[]): void {
-    const questions = this.getQuestions()
+  async reorderQuestions(questionIds: string[]): Promise<void> {
+    const questions = await this.getQuestions()
     const reorderedQuestions = questionIds.map((id, index) => {
       const question = questions.find(q => q.id === id)
       if (!question) {
@@ -112,7 +112,7 @@ export class QuestionManager {
       return { ...question, order: index + 1 }
     })
 
-    this.saveQuestions(reorderedQuestions)
+    await this.saveQuestions(reorderedQuestions)
   }
 
   resetToDefaults(): void {
@@ -121,9 +121,9 @@ export class QuestionManager {
     this.saveQuestions(defaultQuestions)
   }
 
-  getAvailableCategories(): string[] {
+  async getAvailableCategories(): Promise<string[]> {
     try {
-      const questions = this.getQuestions()
+      const questions = await this.getQuestions()
       return Array.from(new Set(questions.map(q => q.category))).sort()
     } catch (error) {
       console.error('Failed to load categories:', error)
@@ -131,11 +131,11 @@ export class QuestionManager {
     }
   }
 
-  isUsingDefaults(): boolean {
+  async isUsingDefaults(): Promise<boolean> {
     try {
       const { questionTemplateManager } = require('./question-templates')
       const defaultQuestions = questionTemplateManager.getDefaultTemplate().questions
-      const currentQuestions = this.getQuestions()
+      const currentQuestions = await this.getQuestions()
       
       if (currentQuestions.length !== defaultQuestions.length) return false
       

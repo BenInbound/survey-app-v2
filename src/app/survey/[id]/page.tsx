@@ -204,52 +204,56 @@ export default function SurveyPage({ params }: SurveyPageProps) {
 
   // Initialize or load existing session
   useEffect(() => {
-    try {
-      // Validate access code first
-      if (!code) {
-        router.push(`/survey/${assessmentId}/access?role=${role || 'employee'}`)
-        return
-      }
+    const initializeSurvey = async () => {
+      try {
+        // Validate access code first
+        if (!code) {
+          router.push(`/survey/${assessmentId}/access?role=${role || 'employee'}`)
+          return
+        }
 
-      // Validate the access code
-      const codeValidation = assessmentManager.validateAccessCode(code)
-      
-      if (!codeValidation.isValid) {
-        setError('Invalid or expired access code. Please contact your organization.')
+        // Validate the access code
+        const codeValidation = await assessmentManager.validateAccessCode(code)
+        
+        if (!codeValidation.isValid) {
+          setError('Invalid or expired access code. Please contact your organization.')
+          setIsLoading(false)
+          return
+        }
+
+        // Get the assessment details
+        const foundAssessment = await assessmentManager.getAssessment(codeValidation.assessmentId)
+        
+        if (!foundAssessment) {
+          setError('Assessment not found.')
+          setIsLoading(false)
+          return
+        }
+
+        setAssessment(foundAssessment)
+
+        if (!role) {
+          setError('This is an organizational assessment. Please access through a role-specific link.')
+          setIsLoading(false)
+          return
+        }
+
+        if (foundAssessment.status === 'locked') {
+          setError('This assessment is no longer accepting responses.')
+          setIsLoading(false)
+          return
+        }
+
         setIsLoading(false)
-        return
-      }
-
-      // Get the assessment details
-      const foundAssessment = assessmentManager.getAssessment(codeValidation.assessmentId)
-      
-      if (!foundAssessment) {
-        setError('Assessment not found.')
+        
+      } catch (err) {
+        console.error('Error during survey initialization:', err)
+        setError(err instanceof Error ? err.message : 'Failed to initialize survey')
         setIsLoading(false)
-        return
       }
-
-      setAssessment(foundAssessment)
-
-      if (!role) {
-        setError('This is an organizational assessment. Please access through a role-specific link.')
-        setIsLoading(false)
-        return
-      }
-
-      if (foundAssessment.status === 'locked') {
-        setError('This assessment is no longer accepting responses.')
-        setIsLoading(false)
-        return
-      }
-
-      setIsLoading(false)
-      
-    } catch (err) {
-      console.error('Error during survey initialization:', err)
-      setError(err instanceof Error ? err.message : 'Failed to initialize survey')
-      setIsLoading(false)
     }
+
+    initializeSurvey()
   }, [assessmentId, role, code, assessmentManager, router])
 
   // Handle starting the actual survey

@@ -104,12 +104,12 @@ export class SurveyManager {
     localStorage.removeItem(this.storageKey)
   }
 
-  getQuestions(): Question[] {
-    return this.questionManager.getQuestions()
+  async getQuestions(): Promise<Question[]> {
+    return await this.questionManager.getQuestions()
   }
 
-  isComplete(session: ParticipantSession): boolean {
-    const questions = this.getQuestions()
+  async isComplete(session: ParticipantSession): Promise<boolean> {
+    const questions = await this.getQuestions()
     return session.responses.length === questions.length
   }
 

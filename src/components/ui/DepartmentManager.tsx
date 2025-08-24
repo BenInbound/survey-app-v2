@@ -31,10 +31,10 @@ export default function DepartmentManager({
   const handleAddDepartment = async () => {
     try {
       setError(null)
-      const newDepartment = assessmentManager.addDepartmentToAssessment(assessmentId, newDepartmentName)
+      const newDepartment = await assessmentManager.addDepartmentToAssessment(assessmentId, newDepartmentName)
       
       // Update the parent component with new departments list
-      const updatedAssessment = assessmentManager.getAssessment(assessmentId)
+      const updatedAssessment = await assessmentManager.getAssessment(assessmentId)
       if (updatedAssessment) {
         onDepartmentsChange(updatedAssessment.departments)
       }

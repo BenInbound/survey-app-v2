@@ -1,26 +1,18 @@
 import { OrganizationalAssessmentManager } from './organizational-assessment-manager'
 import { ParticipantResponse, SliderValue, Department } from './types'
 
-export function createDemoAssessment(forceRecreate = false) {
+export async function createDemoAssessment(forceRecreate = false) {
   const assessmentManager = new OrganizationalAssessmentManager()
   
   // Check if demo already exists
-  const existing = assessmentManager.getAssessment('demo-org')
+  const existing = await assessmentManager.getAssessment('demo-org')
   if (existing && !forceRecreate) {
     return existing
   }
   
   // If force recreating, delete the existing assessment first
   if (forceRecreate && existing) {
-    assessmentManager.deleteAssessment('demo-org')
-  }
-  
-  // Check if demo was intentionally deleted (don't recreate if user deleted it)
-  if (typeof window !== 'undefined') {
-    const demoDeleted = localStorage.getItem('demo-assessment-deleted')
-    if (demoDeleted === 'true') {
-      return null
-    }
+    await assessmentManager.deleteAssessment('demo-org')
   }
 
   // Define realistic departments for demo
@@ -52,7 +44,7 @@ export function createDemoAssessment(forceRecreate = false) {
   ]
 
   // Create demo assessment with departments
-  const demoAssessment = assessmentManager.createAssessment(
+  const demoAssessment = await assessmentManager.createAssessment(
     'Demo Organization', 
     'demo@consultant.com', 
     undefined,
@@ -60,15 +52,9 @@ export function createDemoAssessment(forceRecreate = false) {
     'demo-org'
   )
   
-  // Set fixed access code for demo by directly updating localStorage
-  if (typeof window !== 'undefined') {
-    const assessments = assessmentManager.getAllAssessments()
-    const demoIndex = assessments.findIndex(a => a.id === 'demo-org')
-    if (demoIndex >= 0) {
-      assessments[demoIndex].accessCode = 'DEMO-2025-STRATEGY'
-      localStorage.setItem('organizational-assessments', JSON.stringify(assessments))
-    }
-  }
+  // Set fixed access code for demo
+  demoAssessment.accessCode = 'DEMO-2025-STRATEGY'
+  await assessmentManager.saveAssessment(demoAssessment)
   
   // Engineering Department Responses (High Performing, Well Aligned)
   const engineeringResponses: ParticipantResponse[] = [

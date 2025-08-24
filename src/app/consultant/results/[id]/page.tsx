@@ -28,6 +28,8 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
   }, [assessmentId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAssessmentData = async () => {
+    console.log('🚨 CONSOLE TEST - If you see this, console is working!')
+    console.log('🚨 Loading assessment:', assessmentId)
     try {
       setIsLoadingAssessment(true)
       setError(null)
@@ -38,11 +40,83 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
         refreshDemoAssessment()
       }
       
-      // Try loading from database first, then localStorage as fallback
-      const assessmentData = await assessmentManager.getAssessmentWithDatabase(assessmentId)
+      // Load assessment from Supabase
+      const assessmentData = await assessmentManager.getAssessment(assessmentId)
       if (!assessmentData) {
         setError('Assessment not found in database or local storage')
         return
+      }
+
+      // CRITICAL DEBUG: Log the loaded assessment data
+      console.log('🔍 RESULTS PAGE - Loaded assessment:', {
+        id: assessmentData.id,
+        departments: assessmentData.departments?.map(d => ({
+          id: d.id,
+          name: d.name,
+          mgmtCode: d.managementCode,
+          empCode: d.employeeCode
+        })),
+        departmentData: assessmentData.departmentData?.map(d => ({
+          dept: d.department,
+          name: d.departmentName,
+          mgmtAvg: d.managementResponses.overallAverage,
+          empAvg: d.employeeResponses.overallAverage,
+          mgmtCount: d.responseCount.management,
+          empCount: d.responseCount.employee
+        })),
+        responseCount: assessmentData.responseCount
+      })
+      
+      // FORCE RECALCULATION: If department data shows 0 scores but we have responses, recalculate
+      const hasZeroScores = assessmentData.departmentData?.some(d => 
+        d.managementResponses.overallAverage === 0 && d.employeeResponses.overallAverage === 0
+      )
+      const hasResponses = (assessmentData.responseCount?.management || 0) + (assessmentData.responseCount?.employee || 0) > 0
+      
+      if (hasZeroScores && hasResponses) {
+        console.log('⚠️  PHANTOM DATA DETECTED: Dashboard shows responses but none exist in storage!')
+        console.log('🔄 FORCING DATA RECALCULATION - Zero scores but responses exist')
+        
+        // Check if responses are in database instead
+        try {
+          const dbResponses = await assessmentManager.getParticipantResponses(assessmentId)
+          console.log('🔍 DATABASE RESPONSES CHECK:', dbResponses?.map((r: any) => ({
+            assessmentId: r.assessmentId,
+            department: r.department,
+            role: r.role,
+            completed: !!r.completedAt,
+            responseCount: r.responses?.length || 0
+          })) || 'No database method found')
+        } catch (err) {
+          console.log('🔍 DATABASE CHECK ERROR:', err)
+        }
+        
+        // Get fresh assessment without cached department data
+        const freshAssessment = await assessmentManager.getAssessment(assessmentId)
+        if (freshAssessment) {
+          // FORCE CLEAR cached department data
+          freshAssessment.departmentData = []
+          freshAssessment.managementResponses = { categoryAverages: [], overallAverage: 0, responseCount: 0 }
+          freshAssessment.employeeResponses = { categoryAverages: [], overallAverage: 0, responseCount: 0 }
+          
+          console.log('🔄 CLEARED CACHE - Forcing complete recalculation')
+          // Force regenerate department data with new matching logic
+          await assessmentManager.saveAssessment(freshAssessment) // This triggers updateAggregatedData
+          const updatedAssessment = await assessmentManager.getAssessment(assessmentId)
+          if (updatedAssessment) {
+            console.log('🔄 RECALCULATED DATA:', updatedAssessment.departmentData?.map(d => ({
+              dept: d.department,
+              mgmtAvg: d.managementResponses.overallAverage,
+              empAvg: d.employeeResponses.overallAverage,
+              mgmtCount: d.responseCount.management,
+              empCount: d.responseCount.employee
+            })))
+            setAssessment(updatedAssessment)
+            const newAnalysis = generateComparativeAnalysis(updatedAssessment)
+            setComparativeAnalysis(newAnalysis)
+            return // Skip the original setAssessment below
+          }
+        }
       }
 
       setAssessment(assessmentData)

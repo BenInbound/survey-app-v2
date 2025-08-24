@@ -33,14 +33,14 @@ export default function ConsultantDashboard() {
       setIsLoading(true)
       setError(null)
       
-      // Try loading from database first, then localStorage as fallback
-      const existingAssessments = await assessmentManager.getAllAssessmentsWithDatabase()
+      // Load all assessments from Supabase
+      const existingAssessments = await assessmentManager.getAllAssessments()
       
       // Only create demo assessment if no assessments exist at all
       if (existingAssessments.length === 0) {
         createDemoAssessment()
         // Reload after creating demo
-        const refreshedAssessments = await assessmentManager.getAllAssessmentsWithDatabase()
+        const refreshedAssessments = await assessmentManager.getAllAssessments()
         setAssessments(refreshedAssessments)
       } else {
         // If demo exists, just fix its status, don't recreate it
@@ -58,11 +58,11 @@ export default function ConsultantDashboard() {
     }
   }
 
-  const handleCreateAssessment = () => {
+  const handleCreateAssessment = async () => {
     if (!newAssessment.organizationName.trim()) return
 
     try {
-      const assessment = assessmentManager.createAssessment(
+      const assessment = await assessmentManager.createAssessment(
         newAssessment.organizationName,
         newAssessment.consultantId,
         undefined, // questionSetup
@@ -85,7 +85,7 @@ export default function ConsultantDashboard() {
     
     if (isConfirmed) {
       try {
-        assessmentManager.updateAssessmentStatus(assessmentId, 'locked')
+        await assessmentManager.updateAssessmentStatus(assessmentId, 'locked')
         await loadAssessments()
         alert('Survey closed successfully!')
       } catch (error) {

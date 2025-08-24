@@ -29,7 +29,7 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
     setError('')
 
     try {
-      const validation = manager.validateAccessCode(code)
+      const validation = await manager.validateAccessCode(code)
       console.log('Access code validation:', validation) // Debug log
       
       if (!validation.isValid) {

@@ -28,15 +28,15 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
       // Try async loading from database first
       const currentQuestions = await questionManager.getQuestionsAsync()
       setQuestions(currentQuestions || [])
-      setAvailableCategories(questionManager.getAvailableCategories())
+      setAvailableCategories(await questionManager.getAvailableCategories())
       onQuestionsChange?.()
     } catch (error) {
       console.error('Failed to load questions from database, trying localStorage:', error)
-      // Fallback to sync localStorage loading
+      // Load questions from Supabase
       try {
-        const currentQuestions = questionManager.getQuestions()
+        const currentQuestions = await questionManager.getQuestions()
         setQuestions(currentQuestions || [])
-        setAvailableCategories(questionManager.getAvailableCategories())
+        setAvailableCategories(await questionManager.getAvailableCategories())
         onQuestionsChange?.()
       } catch (fallbackError) {
         console.error('Failed to load questions:', fallbackError)

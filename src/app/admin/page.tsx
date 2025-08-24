@@ -52,41 +52,11 @@ export default function AdminPage() {
   }
 
   const handleDiagnoseDatabase = async () => {
-    setIsDbLoading(true)
-    try {
-      const diagnosis = await supabaseManager.diagnoseDatabaseIssues('demo-org')
-      setDbDiagnosis(diagnosis)
-    } catch (error) {
-      console.error('Diagnosis failed:', error)
-      alert('Failed to diagnose database issues.')
-    } finally {
-      setIsDbLoading(false)
-    }
+    alert('Database diagnosis not needed in Supabase-only architecture')
   }
 
   const handleCleanDatabase = async () => {
-    const confirmed = confirm(
-      'This will DELETE all corrupted data from the Supabase database for demo-org. ' + 
-      'Clean data will be regenerated on next access. Continue?'
-    )
-    
-    if (!confirmed) return
-
-    setIsDbLoading(true)
-    try {
-      const result = await supabaseManager.cleanCorruptedDepartmentData('demo-org')
-      if (result.cleaned) {
-        alert('Database cleaned successfully! Visit the consultant results to see regenerated data.')
-        setDbDiagnosis(null) // Clear diagnosis
-      } else {
-        alert(`Clean failed: ${result.errors.join(', ')}`)
-      }
-    } catch (error) {
-      console.error('Clean failed:', error)
-      alert('Failed to clean database.')
-    } finally {
-      setIsDbLoading(false)
-    }
+    alert('Database cleaning not needed in Supabase-only architecture')
   }
 
   const formatDate = (date: Date) => {

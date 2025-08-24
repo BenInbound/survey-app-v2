@@ -9,11 +9,7 @@ export default function ResetDemo() {
 
   const handleResetDemo = () => {
     if (typeof window !== 'undefined') {
-      // Clear existing demo data
-      localStorage.removeItem('organizational-assessments')
-      localStorage.removeItem('organizational-responses')
-      
-      // Recreate demo data
+      // Recreate demo data (Supabase-only)
       createDemoAssessment()
       
       alert('Demo data has been reset! Access code is now: DEMO-2025-STRATEGY')
@@ -21,10 +17,10 @@ export default function ResetDemo() {
     }
   }
 
-  const checkDemoData = () => {
+  const checkDemoData = async () => {
     if (typeof window !== 'undefined') {
       const manager = new OrganizationalAssessmentManager()
-      const demoAssessment = manager.getAssessment('demo-org')
+      const demoAssessment = await manager.getAssessment('demo-org')
       
       if (demoAssessment) {
         alert(`Demo Assessment Found!\nAccess Code: ${demoAssessment.accessCode}\nStatus: ${demoAssessment.status}\nOrganization: ${demoAssessment.organizationName}`)

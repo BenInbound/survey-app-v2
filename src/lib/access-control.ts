@@ -28,10 +28,11 @@ export class AccessController {
     const departmentMatch = normalizedCode.match(/^([A-Z0-9]+)-(MGMT|EMP)-([A-Z0-9]+)(\d{4})$/)
     if (departmentMatch) {
       const [, orgCode, roleCode, deptCode] = departmentMatch
+      console.log('🔍 Parsed access code:', { normalizedCode, orgCode, roleCode, deptCode })
       return {
         isValid: true,
         role: roleCode === 'MGMT' ? 'management' : 'employee',
-        department: deptCode,
+        department: deptCode, // This is the 3-char truncated version from access code
         organizationName: this.reconstructOrgName(orgCode)
       }
     }

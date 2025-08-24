@@ -14,17 +14,15 @@ import { questionTemplateManager } from './question-templates'
 import { supabaseManager } from './supabase-manager'
 
 export class OrganizationalAssessmentManager {
-  private readonly STORAGE_KEY = 'organizational-assessments'
-  private readonly RESPONSES_KEY = 'organizational-responses'
   private readonly accessController = new AccessController()
 
-  createAssessment(
+  async createAssessment(
     organizationName: string, 
     consultantId: string, 
     questionSetup?: AssessmentQuestionSetup,
     departments?: Department[],
     id?: string
-  ): OrganizationalAssessment {
+  ): Promise<OrganizationalAssessment> {
     const questions = this.getQuestionsForSetup(questionSetup)
     
     // Generate department access codes if departments are provided
@@ -56,27 +54,46 @@ export class OrganizationalAssessmentManager {
       responseCount: { management: 0, employee: 0 }
     }
 
-    this.saveAssessment(assessment)
-    return assessment
+    const savedAssessment = await supabaseManager.saveAssessment(assessment)
+    return savedAssessment
   }
 
-  getAllAssessments(): OrganizationalAssessment[] {
-    if (typeof window === 'undefined') return []
-    
-    const stored = localStorage.getItem(this.STORAGE_KEY)
-    if (!stored) return []
+  async getAllAssessments(): Promise<OrganizationalAssessment[]> {
+    try {
+      return await supabaseManager.getAllAssessments()
+    } catch (error) {
+      console.error('Failed to fetch assessments:', error)
+      return []
+    }
+  }
+
+  async getAssessment(id: string): Promise<OrganizationalAssessment | null> {
+    try {
+      return await supabaseManager.getAssessment(id)
+    } catch (error) {
+      console.error('Failed to fetch assessment:', error)
+      return null
+    }
+  }
+
+  async saveAssessment(assessment: OrganizationalAssessment): Promise<OrganizationalAssessment> {
+    // Calculate aggregated data before saving
+    await this.updateAggregatedData(assessment.id)
     
     try {
-      const assessments = JSON.parse(stored) as OrganizationalAssessment[]
-      return assessments.map(a => this.migrateAssessment({
-        ...a,
-        created: new Date(a.created),
-        lockedAt: a.lockedAt ? new Date(a.lockedAt) : undefined,
-        codeExpiration: a.codeExpiration ? new Date(a.codeExpiration) : undefined,
-        codeRegeneratedAt: a.codeRegeneratedAt ? new Date(a.codeRegeneratedAt) : undefined
-      }))
-    } catch {
-      return []
+      return await supabaseManager.saveAssessment(assessment)
+    } catch (error) {
+      console.error('Failed to save assessment:', error)
+      throw error
+    }
+  }
+
+  async deleteAssessment(id: string): Promise<void> {
+    try {
+      await supabaseManager.deleteAssessment(id)
+    } catch (error) {
+      console.error('Failed to delete assessment:', error)
+      throw error
     }
   }
 
@@ -104,47 +121,55 @@ export class OrganizationalAssessmentManager {
     return assessment as OrganizationalAssessment
   }
 
-  getAssessment(id: string): OrganizationalAssessment | null {
-    const assessments = this.getAllAssessments()
-    return assessments.find(a => a.id === id) || null
-  }
-
-  updateAssessmentStatus(id: string, status: AssessmentStatus): void {
-    const assessments = this.getAllAssessments()
-    const assessment = assessments.find(a => a.id === id)
-    
-    if (!assessment) return
-    
-    assessment.status = status
-    if (status === 'locked') {
-      assessment.lockedAt = new Date()
-      const expiredAssessment = this.accessController.expireAccessCode(assessment)
-      Object.assign(assessment, expiredAssessment)
+  async updateAssessmentStatus(id: string, status: AssessmentStatus): Promise<void> {
+    try {
+      const assessment = await this.getAssessment(id)
+      if (!assessment) return
+      
+      assessment.status = status
+      if (status === 'locked') {
+        assessment.lockedAt = new Date()
+        const expiredAssessment = this.accessController.expireAccessCode(assessment)
+        Object.assign(assessment, expiredAssessment)
+      }
+      
+      await this.saveAssessment(assessment)
+    } catch (error) {
+      console.error('Failed to update assessment status:', error)
+      throw error
     }
-    
-    this.saveAllAssessments(assessments)
   }
 
-  lockAssessmentAndExpireCode(assessmentId: string): void {
-    this.updateAssessmentStatus(assessmentId, 'locked')
+  async lockAssessmentAndExpireCode(assessmentId: string): Promise<void> {
+    await this.updateAssessmentStatus(assessmentId, 'locked')
   }
 
-  regenerateAccessCode(assessmentId: string): string {
-    const assessment = this.getAssessment(assessmentId)
-    if (!assessment) throw new Error('Assessment not found')
+  async regenerateAccessCode(assessmentId: string): Promise<string> {
+    try {
+      const assessment = await this.getAssessment(assessmentId)
+      if (!assessment) throw new Error('Assessment not found')
 
-    const updatedAssessment = this.accessController.regenerateAccessCode(assessment)
-    this.saveAssessment(updatedAssessment)
-    
-    return updatedAssessment.accessCode
+      const updatedAssessment = this.accessController.regenerateAccessCode(assessment)
+      await this.saveAssessment(updatedAssessment)
+      
+      return updatedAssessment.accessCode
+    } catch (error) {
+      console.error('Failed to regenerate access code:', error)
+      throw error
+    }
   }
 
-  validateAccessCode(code: string): import('./types').AccessCodeValidation {
-    const assessments = this.getAllAssessments()
-    return this.accessController.validateAccessCode(code, assessments)
+  async validateAccessCode(code: string): Promise<import('./types').AccessCodeValidation> {
+    try {
+      const assessments = await this.getAllAssessments()
+      return this.accessController.validateAccessCode(code, assessments)
+    } catch (error) {
+      console.error('Failed to validate access code:', error)
+      throw error
+    }
   }
 
-  addParticipantResponse(assessmentId: string, response: ParticipantResponse): void {
+  async addParticipantResponse(assessmentId: string, response: ParticipantResponse): Promise<void> {
     console.log('📝 Adding participant response:', {
       assessmentId,
       role: response.role,
@@ -152,73 +177,69 @@ export class OrganizationalAssessmentManager {
       participantId: response.participantId
     })
     
-    // Store individual response
-    const responses = this.getAllResponses()
-    responses.push(response)
-    this.saveAllResponses(responses)
+    try {
+      // Save response directly to database
+      await supabaseManager.addParticipantResponse(response)
+      
+      console.log('📊 Response saved to database')
 
-    console.log('📊 Total responses now:', responses.length)
-
-    // Update aggregated data
-    this.updateAggregatedData(assessmentId)
-    
-    // Sync to database in background (don't block UI)
-    supabaseManager.syncResponseToDatabase(response).catch(err => {
-      console.log('Background response sync to database failed (localStorage still working):', err)
-    })
-  }
-
-  getParticipantResponses(assessmentId: string, role?: ParticipantRole): ParticipantResponse[] {
-    const responses = this.getAllResponses()
-    let filtered = responses.filter(r => r.assessmentId === assessmentId)
-    
-    if (role) {
-      filtered = filtered.filter(r => r.role === role)
+      // Update aggregated data
+      await this.updateAggregatedData(assessmentId)
+    } catch (error) {
+      console.error('Failed to save participant response:', error)
+      throw error
     }
-    
-    return filtered
   }
 
-  private updateAggregatedData(assessmentId: string): void {
+  async getParticipantResponses(assessmentId: string, role?: ParticipantRole): Promise<ParticipantResponse[]> {
+    try {
+      return await supabaseManager.getParticipantResponses(assessmentId, role)
+    } catch (error) {
+      console.error('Failed to fetch participant responses:', error)
+      return []
+    }
+  }
+
+  private async updateAggregatedData(assessmentId: string): Promise<void> {
     console.log('🔄 Updating aggregated data for assessment:', assessmentId)
     
-    const assessments = this.getAllAssessments()
-    const assessment = assessments.find(a => a.id === assessmentId)
-    if (!assessment) {
-      console.log('❌ Assessment not found:', assessmentId)
-      return
+    try {
+      const assessment = await this.getAssessment(assessmentId)
+      if (!assessment) {
+        console.log('❌ Assessment not found:', assessmentId)
+        return
+      }
+
+      const managementResponses = await this.getParticipantResponses(assessmentId, 'management')
+      const employeeResponses = await this.getParticipantResponses(assessmentId, 'employee')
+
+      console.log('📊 Response counts:', {
+        management: managementResponses.length,
+        employee: employeeResponses.length,
+        managementDepartments: managementResponses.map(r => r.department),
+        employeeDepartments: employeeResponses.map(r => r.department)
+      })
+
+      // Update aggregated data
+      assessment.managementResponses = this.aggregateResponses(managementResponses, assessmentId)
+      assessment.employeeResponses = this.aggregateResponses(employeeResponses, assessmentId)
+      assessment.responseCount = {
+        management: managementResponses.length,
+        employee: employeeResponses.length
+      }
+
+      console.log('✅ Updated assessment responseCount:', assessment.responseCount)
+
+      // Update department-specific aggregated data
+      assessment.departmentData = await this.aggregateDepartmentData(assessmentId)
+
+      // Save updated assessment to database
+      console.log('🔄 Saving updated assessment to database...')
+      await supabaseManager.saveAssessment(assessment)
+    } catch (error) {
+      console.error('Failed to update aggregated data:', error)
+      throw error
     }
-
-    const managementResponses = this.getParticipantResponses(assessmentId, 'management')
-    const employeeResponses = this.getParticipantResponses(assessmentId, 'employee')
-
-    console.log('📊 Response counts:', {
-      management: managementResponses.length,
-      employee: employeeResponses.length,
-      managementDepartments: managementResponses.map(r => r.department),
-      employeeDepartments: employeeResponses.map(r => r.department)
-    })
-
-    // Update legacy aggregated data (for compatibility)
-    assessment.managementResponses = this.aggregateResponses(managementResponses, assessmentId)
-    assessment.employeeResponses = this.aggregateResponses(employeeResponses, assessmentId)
-    assessment.responseCount = {
-      management: managementResponses.length,
-      employee: employeeResponses.length
-    }
-
-    console.log('✅ Updated assessment responseCount:', assessment.responseCount)
-
-    // NEW: Update department-specific aggregated data
-    assessment.departmentData = this.aggregateDepartmentData(assessmentId)
-
-    this.saveAllAssessments(assessments)
-    
-    // CRITICAL FIX: Sync updated assessment to database so dashboard can see participation counts
-    console.log('🔄 Syncing assessment to database...')
-    supabaseManager.syncAssessmentToDatabase(assessment).catch(err => {
-      console.log('Background assessment sync to database failed (localStorage still working):', err)
-    })
   }
 
   private aggregateResponses(responses: ParticipantResponse[], assessmentId?: string): AggregatedResponses {
@@ -266,20 +287,7 @@ export class OrganizationalAssessmentManager {
   }
 
   private getQuestionCategory(questionId: string, assessmentId?: string): string {
-    // Try to get category from assessment's questions first
-    if (assessmentId) {
-      try {
-        const questions = this.getAssessmentQuestions(assessmentId)
-        const question = questions.find(q => q.id === questionId)
-        if (question) {
-          return question.category
-        }
-      } catch {
-        // Fall through to default mapping if assessment not found
-      }
-    }
-
-    // Fallback to default mapping for backward compatibility
+    // Use default mapping for backward compatibility and performance
     const categoryMap: Record<string, string> = {
       // Strategic Alignment Template (default)
       'vision-clarity': 'Vision & Strategy',
@@ -305,51 +313,7 @@ export class OrganizationalAssessmentManager {
     return categoryMap[questionId] || 'Other'
   }
 
-  private getAllResponses(): ParticipantResponse[] {
-    if (typeof window === 'undefined') return []
-    
-    const stored = localStorage.getItem(this.RESPONSES_KEY)
-    if (!stored) return []
-    
-    try {
-      const responses = JSON.parse(stored) as ParticipantResponse[]
-      return responses.map(r => ({
-        ...r,
-        startedAt: new Date(r.startedAt),
-        completedAt: r.completedAt ? new Date(r.completedAt) : undefined
-      }))
-    } catch {
-      return []
-    }
-  }
 
-  private saveAllResponses(responses: ParticipantResponse[]): void {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(this.RESPONSES_KEY, JSON.stringify(responses))
-  }
-
-  saveAssessment(assessment: OrganizationalAssessment): void {
-    const assessments = this.getAllAssessments()
-    const existingIndex = assessments.findIndex(a => a.id === assessment.id)
-    
-    if (existingIndex >= 0) {
-      assessments[existingIndex] = assessment
-    } else {
-      assessments.push(assessment)
-    }
-    
-    this.saveAllAssessments(assessments)
-    
-    // Sync to database in background (don't block UI)
-    supabaseManager.syncAssessmentToDatabase(assessment).catch(err => {
-      console.log('Background sync to database failed (localStorage still working):', err)
-    })
-  }
-
-  private saveAllAssessments(assessments: OrganizationalAssessment[]): void {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(assessments))
-  }
 
   private getQuestionsForSetup(questionSetup?: AssessmentQuestionSetup) {
     if (!questionSetup || questionSetup.source === 'default') {
@@ -371,11 +335,8 @@ export class OrganizationalAssessmentManager {
         if (!questionSetup.sourceAssessmentId) {
           throw new Error('Source assessment ID is required for copy-assessment source')
         }
-        const sourceAssessment = this.getAssessment(questionSetup.sourceAssessmentId)
-        if (!sourceAssessment) {
-          throw new Error(`Source assessment not found: ${questionSetup.sourceAssessmentId}`)
-        }
-        return sourceAssessment.questions
+        // This would need to be async in the future if copy-assessment is needed
+        throw new Error('Copy-assessment not supported in Supabase-only mode')
         
       case 'blank':
         return []
@@ -385,57 +346,34 @@ export class OrganizationalAssessmentManager {
     }
   }
 
-  updateAssessmentQuestions(assessmentId: string, questions: Question[]): void {
-    const assessment = this.getAssessment(assessmentId)
-    if (!assessment) {
-      throw new Error(`Assessment not found: ${assessmentId}`)
+  async updateAssessmentQuestions(assessmentId: string, questions: Question[]): Promise<void> {
+    try {
+      const assessment = await this.getAssessment(assessmentId)
+      if (!assessment) {
+        throw new Error(`Assessment not found: ${assessmentId}`)
+      }
+      
+      assessment.questions = questions
+      await this.saveAssessment(assessment)
+    } catch (error) {
+      console.error('Failed to update assessment questions:', error)
+      throw error
     }
-    
-    assessment.questions = questions
-    this.saveAssessment(assessment)
-    
-    // CRITICAL: Sync to database so changes persist across devices
-    supabaseManager.syncAssessmentToDatabase(assessment).catch(err => {
-      console.log('Failed to sync question updates to database:', err)
-    })
-  }
-
-  // NEW: Async version that loads from database first
-  async updateAssessmentQuestionsWithDatabase(assessmentId: string, questions: Question[]): Promise<void> {
-    const assessment = await this.getAssessmentWithDatabase(assessmentId)
-    if (!assessment) {
-      throw new Error(`Assessment not found: ${assessmentId}`)
-    }
-    
-    assessment.questions = questions
-    
-    // Save to localStorage
-    const assessments = this.getAllAssessments()
-    const index = assessments.findIndex(a => a.id === assessmentId)
-    if (index >= 0) {
-      assessments[index] = assessment
-    } else {
-      assessments.push(assessment)
-    }
-    this.saveAllAssessments(assessments)
-    
-    // Sync to database
-    await supabaseManager.syncAssessmentToDatabase(assessment)
   }
 
   // NEW: Department management methods
-  updateAssessmentDepartments(assessmentId: string, departments: Department[]): void {
-    const assessment = this.getAssessment(assessmentId)
+  async updateAssessmentDepartments(assessmentId: string, departments: Department[]): Promise<void> {
+    const assessment = await this.getAssessment(assessmentId)
     if (!assessment) {
       throw new Error(`Assessment not found: ${assessmentId}`)
     }
     
     assessment.departments = departments
-    this.saveAssessment(assessment)
+    await this.saveAssessment(assessment)
   }
 
-  getAssessmentDepartments(assessmentId: string): Department[] {
-    const assessment = this.getAssessment(assessmentId)
+  async getAssessmentDepartments(assessmentId: string): Promise<Department[]> {
+    const assessment = await this.getAssessment(assessmentId)
     if (!assessment) {
       throw new Error(`Assessment not found: ${assessmentId}`)
     }
@@ -451,8 +389,8 @@ export class OrganizationalAssessmentManager {
     }))
   }
 
-  regenerateDepartmentAccessCodes(assessmentId: string): OrganizationalAssessment {
-    const assessment = this.getAssessment(assessmentId)
+  async regenerateDepartmentAccessCodes(assessmentId: string): Promise<OrganizationalAssessment> {
+    const assessment = await this.getAssessment(assessmentId)
     if (!assessment) {
       throw new Error(`Assessment not found: ${assessmentId}`)
     }
@@ -463,22 +401,51 @@ export class OrganizationalAssessmentManager {
       assessment.departments
     )
     
-    this.saveAssessment(assessment)
+    await this.saveAssessment(assessment)
     return assessment
   }
 
   // NEW: Aggregate data by department
-  private aggregateDepartmentData(assessmentId: string): import('./types').AggregatedDepartmentData[] {
-    const allResponses = this.getParticipantResponses(assessmentId)
-    const assessment = this.getAssessment(assessmentId)
+  private async aggregateDepartmentData(assessmentId: string): Promise<import('./types').AggregatedDepartmentData[]> {
+    try {
+      const allResponses = await this.getParticipantResponses(assessmentId)
+      const assessment = await this.getAssessment(assessmentId)
+      
+      console.log('🏢 Aggregating department data:', {
+        assessmentId,
+        totalResponses: allResponses.length,
+      departments: assessment?.departments?.map(d => d.id) || [],
+      responsesByDept: allResponses.reduce((acc, r) => {
+        acc[r.department] = (acc[r.department] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+    })
     
     if (!assessment || assessment.departments.length === 0) {
+      console.log('❌ No assessment or departments found')
       return []
     }
 
     return assessment.departments.map(dept => {
-      const deptMgmtResponses = allResponses.filter(r => r.department === dept.id && r.role === 'management')
-      const deptEmpResponses = allResponses.filter(r => r.department === dept.id && r.role === 'employee')
+      // CRITICAL FIX: Match both full department ID and truncated access code version
+      const deptMgmtResponses = allResponses.filter(r => 
+        (r.department === dept.id || this.matchesDepartmentCode(r.department, dept)) && 
+        r.role === 'management'
+      )
+      const deptEmpResponses = allResponses.filter(r => 
+        (r.department === dept.id || this.matchesDepartmentCode(r.department, dept)) && 
+        r.role === 'employee'
+      )
+      
+      console.log(`🏢 Department ${dept.id} (${dept.name}):`, {
+        deptId: dept.id,
+        mgmtCode: dept.managementCode,
+        empCode: dept.employeeCode,
+        mgmtResponses: deptMgmtResponses.length,
+        empResponses: deptEmpResponses.length,
+        mgmtDepartments: deptMgmtResponses.map(r => `"${r.department}"`),
+        empDepartments: deptEmpResponses.map(r => `"${r.department}"`)
+      })
       
       const mgmtAggregated = this.aggregateResponses(deptMgmtResponses, assessmentId)
       const empAggregated = this.aggregateResponses(deptEmpResponses, assessmentId)
@@ -498,6 +465,10 @@ export class OrganizationalAssessmentManager {
         perceptionGaps
       }
     })
+    } catch (error) {
+      console.error('Failed to aggregate department data:', error)
+      return []
+    }
   }
 
   // NEW: Calculate perception gaps between management and employee responses
@@ -526,25 +497,49 @@ export class OrganizationalAssessmentManager {
     return gaps
   }
 
-  getAssessmentQuestions(assessmentId: string) {
-    const assessment = this.getAssessment(assessmentId)
-    if (!assessment) {
-      throw new Error(`Assessment not found: ${assessmentId}`)
-    }
+  // CRITICAL FIX: Match department codes from access codes to full department IDs
+  private matchesDepartmentCode(responseDepartment: string, department: Department): boolean {
+    // Extract department code from access codes - could be 3 or 8 characters
+    const mgmtCodeMatch = department.managementCode?.match(/^[A-Z0-9]+-MGMT-([A-Z0-9]+)\d{4}$/)
+    const empCodeMatch = department.employeeCode?.match(/^[A-Z0-9]+-EMP-([A-Z0-9]+)\d{4}$/)
     
-    // Return questions array if it exists, otherwise return empty array
-    return assessment.questions || []
+    const deptCodeFromMgmt = mgmtCodeMatch?.[1]
+    const deptCodeFromEmp = empCodeMatch?.[1]
+    
+    // UPDATED: Also check if response department matches the department ID or partial matches
+    const matches = responseDepartment === deptCodeFromMgmt || 
+                   responseDepartment === deptCodeFromEmp ||
+                   responseDepartment === department.id ||
+                   // Check if responseDepartment is a truncated version
+                   (deptCodeFromMgmt && deptCodeFromMgmt.startsWith(responseDepartment)) ||
+                   (deptCodeFromEmp && deptCodeFromEmp.startsWith(responseDepartment)) ||
+                   // Or if department id contains response department
+                   department.id.includes(responseDepartment.toLowerCase())
+    
+    console.log(`🔍 Matching "${responseDepartment}" against dept ${department.id}:`, {
+      responseDepartment,
+      departmentId: department.id,
+      deptCodeFromMgmt,
+      deptCodeFromEmp,
+      matches
+    })
+    
+    return matches
   }
 
-  // NEW: Async version that loads from database first
-  async getAssessmentQuestionsWithDatabase(assessmentId: string): Promise<Question[]> {
-    const assessment = await this.getAssessmentWithDatabase(assessmentId)
-    if (!assessment) {
-      throw new Error(`Assessment not found: ${assessmentId}`)
+  async getAssessmentQuestions(assessmentId: string): Promise<Question[]> {
+    try {
+      const assessment = await this.getAssessment(assessmentId)
+      if (!assessment) {
+        throw new Error(`Assessment not found: ${assessmentId}`)
+      }
+      
+      // Return questions array if it exists, otherwise return empty array
+      return assessment.questions || []
+    } catch (error) {
+      console.error('Failed to fetch assessment questions:', error)
+      throw error
     }
-    
-    // Return questions array if it exists, otherwise return empty array
-    return assessment.questions || []
   }
 
   private generateId(): string {
@@ -552,8 +547,8 @@ export class OrganizationalAssessmentManager {
   }
 
   // Add department to existing assessment
-  addDepartmentToAssessment(assessmentId: string, departmentName: string): Department {
-    const assessment = this.getAssessment(assessmentId)
+  async addDepartmentToAssessment(assessmentId: string, departmentName: string): Promise<Department> {
+    const assessment = await this.getAssessment(assessmentId)
     if (!assessment) {
       throw new Error(`Assessment not found: ${assessmentId}`)
     }
@@ -597,95 +592,9 @@ export class OrganizationalAssessmentManager {
     assessment.departments.push(departmentWithCodes)
     
     // Save updated assessment
-    this.saveAssessment(assessment)
+    await this.saveAssessment(assessment)
 
     return departmentWithCodes
   }
 
-  // Delete assessment and all related data
-  deleteAssessment(assessmentId: string): void {
-    if (typeof window === 'undefined') return
-
-    // Remove assessment from assessments array
-    const assessments = this.getAllAssessments()
-    const filteredAssessments = assessments.filter(a => a.id !== assessmentId)
-    this.saveAllAssessments(filteredAssessments)
-
-    // Remove all related participant responses
-    const responses = this.getAllResponses()
-    const filteredResponses = responses.filter(r => r.assessmentId !== assessmentId)
-    this.saveAllResponses(filteredResponses)
-  }
-
-  // Utility methods for development/testing
-  clearAllAssessments(): void {
-    if (typeof window === 'undefined') return
-    localStorage.removeItem(this.STORAGE_KEY)
-    localStorage.removeItem(this.RESPONSES_KEY)
-  }
-
-  exportData(): { assessments: OrganizationalAssessment[], responses: ParticipantResponse[] } {
-    return {
-      assessments: this.getAllAssessments(),
-      responses: this.getAllResponses()
-    }
-  }
-
-  /**
-   * Enhanced method that loads from database AND localStorage
-   * Returns combined data with database as source of truth when available
-   */
-  async getAllAssessmentsWithDatabase(): Promise<OrganizationalAssessment[]> {
-    try {
-      // Try to load from database first
-      const databaseAssessments = await supabaseManager.loadAllAssessments()
-      
-      if (databaseAssessments.length > 0) {
-        // Database has data - use it as primary source
-        console.log('Using database as primary source for assessments')
-        return databaseAssessments
-      } else {
-        // Database is empty - check localStorage
-        const localStorageAssessments = this.getAllAssessments()
-        
-        if (localStorageAssessments.length > 0) {
-          // Sync localStorage to database for future multi-device access
-          console.log('Syncing localStorage to database...')
-          supabaseManager.syncAllLocalStorageToDatabase().catch(err => {
-            console.log('Background sync failed:', err)
-          })
-        }
-        
-        return localStorageAssessments
-      }
-    } catch (err) {
-      console.log('Database access failed, using localStorage:', err)
-      return this.getAllAssessments()
-    }
-  }
-
-  /**
-   * Enhanced method that loads assessment from database first
-   */
-  async getAssessmentWithDatabase(id: string): Promise<OrganizationalAssessment | null> {
-    try {
-      // Try database first
-      const databaseAssessment = await supabaseManager.loadAssessment(id)
-      if (databaseAssessment) {
-        return databaseAssessment
-      }
-    } catch (err) {
-      console.log('Database access failed for assessment, using localStorage:', err)
-    }
-    
-    // Fallback to localStorage
-    return this.getAssessment(id)
-  }
-
-  /**
-   * Check if database is available for multi-device functionality
-   */
-  async isDatabaseAvailable(): Promise<boolean> {
-    return await supabaseManager.isDatabaseAvailable()
-  }
 }

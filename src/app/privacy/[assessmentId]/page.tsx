@@ -19,29 +19,33 @@ export default function PrivacyNotice({ params }: PrivacyNoticeProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const assessmentManager = new OrganizationalAssessmentManager()
-    const controllerManager = new ControllerProcessorManager()
-    const privacyManager = new PrivacyManager()
+    const loadData = async () => {
+      const assessmentManager = new OrganizationalAssessmentManager()
+      const controllerManager = new ControllerProcessorManager()
+      const privacyManager = new PrivacyManager()
 
-    // Get assessment details
-    const assessmentData = assessmentManager.getAssessment(assessmentId)
-    if (!assessmentData) {
+      // Get assessment details
+      const assessmentData = await assessmentManager.getAssessment(assessmentId)
+      if (!assessmentData) {
+        setIsLoading(false)
+        return
+      }
+
+      setAssessment(assessmentData)
+
+      // Get processing overview with GDPR details
+      const overview = controllerManager.generateProcessingOverview(assessmentId)
+      setProcessingOverview(overview)
+
+      // Initialize joint controller agreement if not exists
+      if (!controllerManager.getJointControllerAgreement(assessmentId)) {
+        controllerManager.createJointControllerAgreement(assessmentId, assessmentData.organizationName)
+      }
+
       setIsLoading(false)
-      return
     }
 
-    setAssessment(assessmentData)
-
-    // Get processing overview with GDPR details
-    const overview = controllerManager.generateProcessingOverview(assessmentId)
-    setProcessingOverview(overview)
-
-    // Initialize joint controller agreement if not exists
-    if (!controllerManager.getJointControllerAgreement(assessmentId)) {
-      controllerManager.createJointControllerAgreement(assessmentId, assessmentData.organizationName)
-    }
-
-    setIsLoading(false)
+    loadData()
   }, [assessmentId])
 
   if (isLoading) {
