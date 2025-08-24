@@ -18,60 +18,60 @@ import {
 // Role-specific landing page components
 function EmployeeLandingPage({ organizationName, assessmentId, onStart }: { organizationName: string; assessmentId: string; onStart: () => void }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-custom-gray flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-4">
             {organizationName} Strategic Assessment
           </h1>
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="text-lg text-neutral-600 mb-6">
             Your Voice Matters - Help Shape Our Future
           </p>
         </div>
 
         <div className="space-y-4 mb-8">
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </div>
             <div>
-              <p className="font-medium text-gray-900">Completely Anonymous</p>
-              <p className="text-sm text-gray-600">Your individual responses are never shared or identified</p>
+              <p className="font-medium text-neutral-900">Completely Anonymous</p>
+              <p className="text-sm text-neutral-600">Your individual responses are never shared or identified</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </div>
             <div>
-              <p className="font-medium text-gray-900">Quick & Simple</p>
-              <p className="text-sm text-gray-600">Takes just 3-4 minutes to complete</p>
+              <p className="font-medium text-neutral-900">Quick & Simple</p>
+              <p className="text-sm text-neutral-600">Takes just 3-4 minutes to complete</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </div>
             <div>
-              <p className="font-medium text-gray-900">Makes a Difference</p>
-              <p className="text-sm text-gray-600">Your honest feedback helps shape {organizationName}&apos;s future direction</p>
+              <p className="font-medium text-neutral-900">Makes a Difference</p>
+              <p className="text-sm text-neutral-600">Your honest feedback helps shape {organizationName}&apos;s future direction</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-green-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-green-800 leading-relaxed">
+        <div className="bg-primary-50 rounded-lg p-4 mb-6">
+          <p className="text-sm text-primary-800 leading-relaxed">
             <strong>Your Privacy is Protected:</strong> This assessment is conducted by external consultants. 
             Your individual answers will never be seen by {organizationName} management - only aggregated, anonymous insights.
           </p>
@@ -80,7 +80,7 @@ function EmployeeLandingPage({ organizationName, assessmentId, onStart }: { orga
         <div className="text-center mb-6">
           <a 
             href={`/privacy/${assessmentId}`}
-            className="text-sm text-green-700 hover:text-green-800 underline"
+            className="text-sm text-primary-700 hover:text-primary-800 underline"
           >
             View detailed privacy notice and your data protection rights
           </a>
@@ -88,7 +88,7 @@ function EmployeeLandingPage({ organizationName, assessmentId, onStart }: { orga
 
         <button
           onClick={onStart}
-          className="w-full bg-green-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-green-700 transition-colors"
+          className="w-full bg-primary-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-primary-700 transition-colors"
         >
           Begin Anonymous Assessment
         </button>
@@ -99,60 +99,60 @@ function EmployeeLandingPage({ organizationName, assessmentId, onStart }: { orga
 
 function ManagementLandingPage({ organizationName, assessmentId, onStart }: { organizationName: string; assessmentId: string; onStart: () => void }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-custom-gray flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-4">
             {organizationName} Leadership Assessment
           </h1>
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="text-lg text-neutral-600 mb-6">
             Strategic Organizational Health Initiative
           </p>
         </div>
 
         <div className="space-y-4 mb-8">
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </div>
             <div>
-              <p className="font-medium text-gray-900">Strategic Focus</p>
-              <p className="text-sm text-gray-600">Assess organizational health across key strategic dimensions</p>
+              <p className="font-medium text-neutral-900">Strategic Focus</p>
+              <p className="text-sm text-neutral-600">Assess organizational health across key strategic dimensions</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </div>
             <div>
-              <p className="font-medium text-gray-900">Leadership Perspective</p>
-              <p className="text-sm text-gray-600">Share your management viewpoint on organizational performance</p>
+              <p className="font-medium text-neutral-900">Leadership Perspective</p>
+              <p className="text-sm text-neutral-600">Share your management viewpoint on organizational performance</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </div>
             <div>
-              <p className="font-medium text-gray-900">Strategic Insights</p>
-              <p className="text-sm text-gray-600">Contribute to data-driven organizational improvement initiatives</p>
+              <p className="font-medium text-neutral-900">Strategic Insights</p>
+              <p className="text-sm text-neutral-600">Contribute to data-driven organizational improvement initiatives</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-blue-800 leading-relaxed">
+        <div className="bg-primary-50 rounded-lg p-4 mb-6">
+          <p className="text-sm text-primary-800 leading-relaxed">
             <strong>Professional Consultation:</strong> Your responses will be analyzed by our strategy consultants 
             to provide organizational insights and recommendations through facilitated leadership sessions.
           </p>
@@ -161,7 +161,7 @@ function ManagementLandingPage({ organizationName, assessmentId, onStart }: { or
         <div className="text-center mb-6">
           <a 
             href={`/privacy/${assessmentId}`}
-            className="text-sm text-blue-700 hover:text-blue-800 underline"
+            className="text-sm text-primary-700 hover:text-primary-800 underline"
           >
             View detailed privacy notice and your data protection rights
           </a>
@@ -169,7 +169,7 @@ function ManagementLandingPage({ organizationName, assessmentId, onStart }: { or
 
         <button
           onClick={onStart}
-          className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-colors"
+          className="w-full bg-primary-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-primary-700 transition-colors"
         >
           Begin Leadership Assessment
         </button>
@@ -354,8 +354,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading survey...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-neutral-600">Loading survey...</p>
         </div>
       </div>
     )
@@ -365,16 +365,16 @@ export default function SurveyPage({ params }: SurveyPageProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 mb-4">
+          <div className="text-error mb-4">
             <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">Something went wrong</h2>
+          <p className="text-neutral-600 mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
           >
             Try Again
           </button>
@@ -397,8 +397,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading survey...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-neutral-600">Loading survey...</p>
         </div>
       </div>
     )
@@ -409,7 +409,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const canGoNext = currentValue !== null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <div className="min-h-screen bg-custom-gray py-8">
       <div className="container mx-auto px-4 max-w-2xl">
         {/* Logo */}
         <div className="mb-8">
@@ -418,10 +418,10 @@ export default function SurveyPage({ params }: SurveyPageProps) {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-neutral-900 mb-2">
             {assessment?.organizationName} Assessment - {role === 'management' ? 'Leadership' : 'Employee'} View
           </h1>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             Please rate each statement based on your {role === 'management' ? 'leadership' : 'employee'} perspective
           </p>
         </div>
@@ -434,10 +434,10 @@ export default function SurveyPage({ params }: SurveyPageProps) {
         {/* Question Card */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <div className="text-center mb-8">
-            <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full mb-4">
+            <div className="inline-block px-3 py-1 bg-primary-100 text-primary-800 text-sm font-medium rounded-full mb-4">
               {currentQuestion.category}
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 leading-relaxed">
+            <h2 className="text-xl font-semibold text-neutral-900 leading-relaxed">
               {currentQuestion.text}
             </h2>
           </div>
@@ -458,8 +458,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             className={`
               flex items-center px-6 py-3 rounded-lg font-medium transition-colors
               ${canGoBack 
-                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-custom-gray' 
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50' 
+                : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
               }
             `}
           >
@@ -470,7 +470,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
           </button>
 
           <div className="text-center">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-neutral-500">
               {currentValue ? 'Click Next to continue' : 'Please select a rating'}
             </span>
           </div>
@@ -481,8 +481,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             className={`
               flex items-center px-6 py-3 rounded-lg font-medium transition-colors
               ${canGoNext 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'bg-primary-600 text-white hover:bg-primary-700' 
+                : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
               }
             `}
           >

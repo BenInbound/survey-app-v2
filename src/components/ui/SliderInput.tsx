@@ -8,16 +8,16 @@ const SLIDER_EMOJIS = {
 } as const
 
 const SLIDER_COLORS = {
-  1: 'from-red-500 to-red-600',
-  2: 'from-red-400 to-red-500', 
-  3: 'from-orange-500 to-orange-600',
-  4: 'from-orange-400 to-yellow-500',
-  5: 'from-yellow-400 to-yellow-500',
-  6: 'from-yellow-300 to-green-400',
-  7: 'from-green-400 to-green-500',
-  8: 'from-green-500 to-green-600',
-  9: 'from-blue-500 to-blue-600',
-  10: 'from-purple-500 to-purple-600'
+  1: 'from-error to-red-600',
+  2: 'from-red-400 to-error', 
+  3: 'from-secondary-500 to-secondary-600',
+  4: 'from-secondary-400 to-secondary-500',
+  5: 'from-secondary-400 to-secondary-500',
+  6: 'from-secondary-300 to-primary-400',
+  7: 'from-primary-400 to-primary-500',
+  8: 'from-primary-500 to-primary-600',
+  9: 'from-primary-500 to-primary-600',
+  10: 'from-primary-600 to-primary-700'
 } as const
 
 interface SliderInputProps extends SliderProps {
@@ -36,7 +36,7 @@ export default function SliderInput({
   }
 
   const currentEmoji = value ? SLIDER_EMOJIS[value] : '🤔'
-  const currentColor = value ? SLIDER_COLORS[value] : 'from-gray-300 to-gray-400'
+  const currentColor = value ? SLIDER_COLORS[value] : 'from-neutral-300 to-neutral-400'
 
   return (
     <div className={`w-full max-w-md mx-auto ${className}`}>
@@ -48,10 +48,10 @@ export default function SliderInput({
           </span>
         </div>
         <div className="mt-4">
-          <span className="text-3xl font-bold text-gray-800">
+          <span className="text-3xl font-bold text-neutral-800">
             {value || '?'}
           </span>
-          <span className="text-lg text-gray-600 ml-1">/10</span>
+          <span className="text-lg text-neutral-600 ml-1">/10</span>
         </div>
       </div>
 
@@ -66,33 +66,33 @@ export default function SliderInput({
           onChange={handleSliderChange}
           disabled={disabled}
           className={`
-            w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer
+            w-full h-3 bg-neutral-200 rounded-lg appearance-none cursor-pointer
             disabled:cursor-not-allowed disabled:opacity-50
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-            ${value ? `bg-gradient-to-r ${currentColor}` : 'bg-gray-200'}
+            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+            ${value ? `bg-gradient-to-r ${currentColor}` : 'bg-neutral-200'}
           `}
           style={{
             background: value ? `linear-gradient(to right, 
-              ${value >= 1 ? '#ef4444' : '#d1d5db'} 0%, 
-              ${value >= 2 ? '#f97316' : '#d1d5db'} 11%, 
-              ${value >= 3 ? '#eab308' : '#d1d5db'} 22%,
-              ${value >= 4 ? '#84cc16' : '#d1d5db'} 33%,
-              ${value >= 5 ? '#22c55e' : '#d1d5db'} 44%,
-              ${value >= 6 ? '#10b981' : '#d1d5db'} 55%,
-              ${value >= 7 ? '#06b6d4' : '#d1d5db'} 66%,
-              ${value >= 8 ? '#3b82f6' : '#d1d5db'} 77%,
-              ${value >= 9 ? '#8b5cf6' : '#d1d5db'} 88%,
-              ${value >= 10 ? '#a855f7' : '#d1d5db'} 100%)` : undefined
+              ${value >= 1 ? '#DC2626' : '#D6D3D1'} 0%, 
+              ${value >= 2 ? '#EA580C' : '#D6D3D1'} 11%, 
+              ${value >= 3 ? '#D97706' : '#D6D3D1'} 22%,
+              ${value >= 4 ? '#CA8A04' : '#D6D3D1'} 33%,
+              ${value >= 5 ? '#F59E0B' : '#D6D3D1'} 44%,
+              ${value >= 6 ? '#14B8A6' : '#D6D3D1'} 55%,
+              ${value >= 7 ? '#0D9488' : '#D6D3D1'} 66%,
+              ${value >= 8 ? '#0F766E' : '#D6D3D1'} 77%,
+              ${value >= 9 ? '#134E4A' : '#D6D3D1'} 88%,
+              ${value >= 10 ? '#115E59' : '#D6D3D1'} 100%)` : undefined
           }}
         />
         
         {/* Scale Markers */}
-        <div className="flex justify-between text-xs text-gray-500 mt-2 px-1">
+        <div className="flex justify-between text-xs text-neutral-500 mt-2 px-1">
           {Array.from({ length: 10 }, (_, i) => (
             <span 
               key={i + 1} 
               className={`transition-colors duration-200 ${
-                value && value >= i + 1 ? 'text-gray-700 font-medium' : ''
+                value && value >= i + 1 ? 'text-neutral-700 font-medium' : ''
               }`}
             >
               {i + 1}
@@ -102,7 +102,7 @@ export default function SliderInput({
       </div>
 
       {/* Helper Text */}
-      <div className="flex justify-between text-sm text-gray-500 mt-4 px-4">
+      <div className="flex justify-between text-sm text-neutral-500 mt-4 px-4">
         <span>Strongly Disagree</span>
         <span>Strongly Agree</span>
       </div>

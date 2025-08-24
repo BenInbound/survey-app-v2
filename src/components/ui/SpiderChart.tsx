@@ -42,14 +42,14 @@ export function transformDataForChart(categoryData: CategoryAverage[]) {
       {
         label: 'Category Scores',
         data,
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(13, 148, 136, 0.2)',
+        borderColor: 'rgba(13, 148, 136, 1)',
         borderWidth: 2,
-        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBackgroundColor: 'rgba(13, 148, 136, 1)',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        pointHoverBorderColor: 'rgba(13, 148, 136, 1)',
         pointRadius: 6,
         pointHoverRadius: 8,
       },
@@ -95,7 +95,7 @@ export function getChartConfig() {
             size: 14,
             weight: 'bold' as const
           },
-          color: '#374151'
+          color: '#44403C'
         }
       },
     },
@@ -115,7 +115,7 @@ export function SpiderChart({ categoryData, className = '' }: SpiderChartProps) 
   if (!categoryData || categoryData.length === 0) {
     return (
       <div className={`flex items-center justify-center h-64 bg-custom-gray rounded-lg ${className}`}>
-        <div className="text-center text-gray-500">
+        <div className="text-center text-neutral-500">
           <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>

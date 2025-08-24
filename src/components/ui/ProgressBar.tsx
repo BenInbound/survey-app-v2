@@ -17,19 +17,19 @@ export default function ProgressBar({
     <div className={`w-full ${className}`}>
       {/* Progress Text */}
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-gray-600">
+        <span className="text-sm font-medium text-neutral-600">
           Question {currentIndex + 1} of {totalQuestions}
         </span>
-        <span className="text-sm font-semibold text-blue-600">
+        <span className="text-sm font-semibold text-primary-600">
           {percentage}%
         </span>
       </div>
 
       {/* Progress Bar Container */}
-      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+      <div className="w-full bg-neutral-200 rounded-full h-2.5 overflow-hidden">
         <div
           className={`
-            h-full bg-gradient-to-r from-blue-500 to-blue-600 
+            h-full bg-gradient-to-r from-primary-500 to-primary-600 
             rounded-full transition-all duration-500 ease-out
             ${animated ? 'transform-gpu' : ''}
           `}
@@ -53,8 +53,8 @@ export default function ProgressBar({
             className={`
               w-2 h-2 rounded-full transition-colors duration-300
               ${index <= currentIndex 
-                ? 'bg-blue-500' 
-                : 'bg-gray-300'
+                ? 'bg-primary-500' 
+                : 'bg-neutral-300'
               }
             `}
           />
@@ -64,7 +64,7 @@ export default function ProgressBar({
       {/* Completion Message */}
       {percentage === 100 && (
         <div className="mt-4 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+          <div className="inline-flex items-center px-4 py-2 bg-success bg-opacity-20 text-success rounded-full text-sm font-medium">
             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"

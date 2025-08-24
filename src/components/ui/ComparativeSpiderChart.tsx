@@ -53,10 +53,10 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
       {
         label: 'Management Perspective',
         data: managementScores,
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(13, 148, 136, 0.2)',
+        borderColor: 'rgb(13, 148, 136)',
         borderWidth: 3,
-        pointBackgroundColor: 'rgb(59, 130, 246)',
+        pointBackgroundColor: 'rgb(13, 148, 136)',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         pointRadius: 6,
@@ -65,10 +65,10 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
       {
         label: 'Employee Perspective',
         data: employeeScores,
-        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: 'rgba(217, 119, 6, 0.2)',
+        borderColor: 'rgb(217, 119, 6)',
         borderWidth: 3,
-        pointBackgroundColor: 'rgb(16, 185, 129)',
+        pointBackgroundColor: 'rgb(217, 119, 6)',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         pointRadius: 6,
@@ -119,7 +119,7 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
           font: {
             size: 12
           },
-          color: '#6B7280'
+          color: '#78716C'
         },
         grid: {
           color: 'rgba(0, 0, 0, 0.1)'
@@ -132,7 +132,7 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
             size: 13,
             weight: 'bold'
           },
-          color: '#374151',
+          color: '#44403C',
           padding: 15
         }
       }
@@ -166,15 +166,15 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
       {/* Gap Insights */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Largest Perception Gaps</h3>
+          <h3 className="text-lg font-semibold text-neutral-900 mb-4">Largest Perception Gaps</h3>
           <div className="space-y-3">
             {gapInsights.slice(0, 3).map((insight, index) => (
               <div key={insight.category} className="flex items-center justify-between p-3 bg-custom-gray rounded-lg">
                 <div>
-                  <div className="font-medium text-gray-900">{insight.category}</div>
-                  <div className="text-sm text-gray-600">{insight.direction}</div>
+                  <div className="font-medium text-neutral-900">{insight.category}</div>
+                  <div className="text-sm text-neutral-600">{insight.direction}</div>
                 </div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-lg font-bold text-neutral-900">
                   {insight.gap.toFixed(1)}
                 </div>
               </div>
@@ -183,14 +183,14 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Summary</h3>
+          <h3 className="text-lg font-semibold text-neutral-900 mb-4">Data Summary</h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-primary-50 rounded-lg">
               <div>
-                <div className="font-medium text-blue-900">Management Average</div>
-                <div className="text-sm text-blue-700">Across all categories</div>
+                <div className="font-medium text-primary-900">Management Average</div>
+                <div className="text-sm text-primary-700">Across all categories</div>
               </div>
-              <div className="text-lg font-bold text-blue-900">
+              <div className="text-lg font-bold text-primary-900">
                 {managementData.length > 0 
                   ? (managementScores.reduce((a, b) => a + b, 0) / managementScores.length).toFixed(1)
                   : '0.0'
@@ -198,12 +198,12 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-secondary-50 rounded-lg">
               <div>
-                <div className="font-medium text-green-900">Employee Average</div>
-                <div className="text-sm text-green-700">Across all categories</div>
+                <div className="font-medium text-secondary-900">Employee Average</div>
+                <div className="text-sm text-secondary-700">Across all categories</div>
               </div>
-              <div className="text-lg font-bold text-green-900">
+              <div className="text-lg font-bold text-secondary-900">
                 {employeeData.length > 0 
                   ? (employeeScores.reduce((a, b) => a + b, 0) / employeeScores.length).toFixed(1)
                   : '0.0'
@@ -211,12 +211,12 @@ export function ComparativeSpiderChart({ managementData, employeeData }: Compara
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-info bg-opacity-10 rounded-lg">
               <div>
-                <div className="font-medium text-purple-900">Overall Gap</div>
-                <div className="text-sm text-purple-700">Average difference</div>
+                <div className="font-medium text-info">Overall Gap</div>
+                <div className="text-sm text-info opacity-80">Average difference</div>
               </div>
-              <div className="text-lg font-bold text-purple-900">
+              <div className="text-lg font-bold text-info">
                 {managementData.length > 0 && employeeData.length > 0
                   ? Math.abs(
                       (managementScores.reduce((a, b) => a + b, 0) / managementScores.length) -

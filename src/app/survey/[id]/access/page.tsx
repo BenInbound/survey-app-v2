@@ -61,7 +61,7 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-custom-gray p-4">
       {/* Logo */}
       <div className="pt-8 pb-4 pl-8">
         <Logo />
@@ -70,22 +70,22 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
       <div className="flex items-center justify-center flex-1">
         <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-neutral-900 mb-2">
             Secure Assessment Access
           </h1>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             Enter your organization&apos;s assessment code to begin
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="code" className="block text-sm font-medium text-neutral-700 mb-2">
               Assessment Code
             </label>
             <input
@@ -94,7 +94,7 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
               value={code}
               onChange={handleCodeChange}
               placeholder="COMPANY-2025-STRATEGY"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-lg font-mono uppercase tracking-wider"
+              className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-center text-lg font-mono uppercase tracking-wider"
               disabled={isValidating}
               autoComplete="off"
               spellCheck="false"
@@ -102,10 +102,10 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
             />
             {error && (
               <div className="mt-2 flex items-start space-x-2">
-                <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-error mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-error">{error}</p>
               </div>
             )}
           </div>
@@ -113,7 +113,7 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
           <button
             type="submit"
             disabled={isValidating || !code.trim()}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium text-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-medium text-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-colors"
           >
             {isValidating ? (
               <span className="flex items-center justify-center space-x-2">
@@ -129,10 +129,10 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-8 pt-6 border-t border-neutral-200">
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-2">Need help?</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-sm text-neutral-500 mb-2">Need help?</p>
+            <p className="text-xs text-neutral-400">
               Contact your HR representative or the person who sent you this assessment link
             </p>
           </div>

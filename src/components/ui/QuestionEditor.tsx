@@ -24,16 +24,17 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
   const loadQuestions = useCallback(() => {
     try {
       const currentQuestions = questionManager.getQuestions()
-      setQuestions(currentQuestions)
+      setQuestions(currentQuestions || [])
       setAvailableCategories(questionManager.getAvailableCategories())
       onQuestionsChange?.()
     } catch (error) {
       console.error('Failed to load questions in QuestionEditor:', error)
       setQuestions([])
       setAvailableCategories([])
-      // Optionally show user feedback
+      // Show user-friendly error message
+      alert(`Error loading questions for assessment ${assessmentId}: ${(error as Error).message}`)
     }
-  }, [questionManager, onQuestionsChange])
+  }, [questionManager, onQuestionsChange, assessmentId])
 
   useEffect(() => {
     loadQuestions()

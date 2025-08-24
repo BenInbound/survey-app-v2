@@ -58,7 +58,7 @@ export class OrganizationalAssessmentManager {
     
     try {
       const assessments = JSON.parse(stored) as OrganizationalAssessment[]
-      return assessments.map(a => ({
+      return assessments.map(a => this.migrateAssessment({
         ...a,
         created: new Date(a.created),
         lockedAt: a.lockedAt ? new Date(a.lockedAt) : undefined,
@@ -68,6 +68,21 @@ export class OrganizationalAssessmentManager {
     } catch {
       return []
     }
+  }
+
+  private migrateAssessment(assessment: any): OrganizationalAssessment {
+    // Ensure questions field exists for older assessments
+    if (!assessment.questions) {
+      const defaultQuestions = questionTemplateManager.getDefaultTemplate().questions
+      assessment.questions = defaultQuestions
+    }
+    
+    // Ensure questionSource exists
+    if (!assessment.questionSource) {
+      assessment.questionSource = { source: 'default' }
+    }
+    
+    return assessment as OrganizationalAssessment
   }
 
   getAssessment(id: string): OrganizationalAssessment | null {
@@ -302,7 +317,8 @@ export class OrganizationalAssessmentManager {
       throw new Error(`Assessment not found: ${assessmentId}`)
     }
     
-    return assessment.questions
+    // Return questions array if it exists, otherwise return empty array
+    return assessment.questions || []
   }
 
   private generateId(): string {

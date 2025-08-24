@@ -11,7 +11,9 @@ export class QuestionManager {
 
   getQuestions(): Question[] {
     try {
-      return this.assessmentManager.getAssessmentQuestions(this.assessmentId)
+      const questions = this.assessmentManager.getAssessmentQuestions(this.assessmentId)
+      // Ensure we always return an array
+      return Array.isArray(questions) ? questions : []
     } catch (error) {
       console.error('Failed to load assessment questions:', error)
       throw error
