@@ -179,8 +179,8 @@ export class OrganizationalAssessmentManager {
     const employeeResponses = this.getParticipantResponses(assessmentId, 'employee')
 
     // Update legacy aggregated data (for compatibility)
-    assessment.managementResponses = this.aggregateResponses(managementResponses)
-    assessment.employeeResponses = this.aggregateResponses(employeeResponses)
+    assessment.managementResponses = this.aggregateResponses(managementResponses, assessmentId)
+    assessment.employeeResponses = this.aggregateResponses(employeeResponses, assessmentId)
     assessment.responseCount = {
       management: managementResponses.length,
       employee: employeeResponses.length
@@ -192,7 +192,7 @@ export class OrganizationalAssessmentManager {
     this.saveAllAssessments(assessments)
   }
 
-  private aggregateResponses(responses: ParticipantResponse[]): AggregatedResponses {
+  private aggregateResponses(responses: ParticipantResponse[], assessmentId?: string): AggregatedResponses {
     if (responses.length === 0) {
       return {
         categoryAverages: [],
@@ -210,7 +210,7 @@ export class OrganizationalAssessmentManager {
       response.responses.forEach(answer => {
         // Get the question category from the assessment
         const questionId = answer.questionId
-        const category = this.getQuestionCategory(questionId, responses[0]?.assessmentId)
+        const category = this.getQuestionCategory(questionId, assessmentId)
         
         if (!categoryData[category]) {
           categoryData[category] = { sum: 0, count: 0 }
@@ -252,6 +252,17 @@ export class OrganizationalAssessmentManager {
 
     // Fallback to default mapping for backward compatibility
     const categoryMap: Record<string, string> = {
+      // Strategic Alignment Template (default)
+      'vision-clarity': 'Vision & Strategy',
+      'strategy-execution': 'Vision & Strategy',
+      'leadership-alignment': 'Leadership & Culture',
+      'stakeholder-buyin': 'Vision & Strategy',
+      'strategic-communication': 'Leadership & Culture',
+      'resource-allocation': 'Operations & Performance',
+      'strategic-metrics': 'Operations & Performance',
+      'strategic-agility': 'Innovation & Agility',
+      
+      // Legacy questions (keep for backward compatibility)
       'strategy-clarity': 'Strategic Clarity',
       'market-position': 'Market Position', 
       'competitive-advantage': 'Competitive Advantage',
@@ -412,8 +423,8 @@ export class OrganizationalAssessmentManager {
       const deptMgmtResponses = allResponses.filter(r => r.department === dept.id && r.role === 'management')
       const deptEmpResponses = allResponses.filter(r => r.department === dept.id && r.role === 'employee')
       
-      const mgmtAggregated = this.aggregateResponses(deptMgmtResponses)
-      const empAggregated = this.aggregateResponses(deptEmpResponses)
+      const mgmtAggregated = this.aggregateResponses(deptMgmtResponses, assessmentId)
+      const empAggregated = this.aggregateResponses(deptEmpResponses, assessmentId)
       
       // Calculate perception gaps
       const perceptionGaps = this.calculatePerceptionGaps(mgmtAggregated, empAggregated)
