@@ -11,6 +11,7 @@ import {
 } from './types'
 import { AccessController } from './access-control'
 import { questionTemplateManager } from './question-templates'
+import { supabaseManager } from './supabase-manager'
 
 export class OrganizationalAssessmentManager {
   private readonly STORAGE_KEY = 'organizational-assessments'
@@ -151,6 +152,11 @@ export class OrganizationalAssessmentManager {
 
     // Update aggregated data
     this.updateAggregatedData(assessmentId)
+    
+    // Sync to database in background (don't block UI)
+    supabaseManager.syncResponseToDatabase(response).catch(err => {
+      console.log('Background response sync to database failed (localStorage still working):', err)
+    })
   }
 
   getParticipantResponses(assessmentId: string, role?: ParticipantRole): ParticipantResponse[] {
@@ -293,6 +299,11 @@ export class OrganizationalAssessmentManager {
     }
     
     this.saveAllAssessments(assessments)
+    
+    // Sync to database in background (don't block UI)
+    supabaseManager.syncAssessmentToDatabase(assessment).catch(err => {
+      console.log('Background sync to database failed (localStorage still working):', err)
+    })
   }
 
   private saveAllAssessments(assessments: OrganizationalAssessment[]): void {
@@ -539,5 +550,63 @@ export class OrganizationalAssessmentManager {
       assessments: this.getAllAssessments(),
       responses: this.getAllResponses()
     }
+  }
+
+  /**
+   * Enhanced method that loads from database AND localStorage
+   * Returns combined data with database as source of truth when available
+   */
+  async getAllAssessmentsWithDatabase(): Promise<OrganizationalAssessment[]> {
+    try {
+      // Try to load from database first
+      const databaseAssessments = await supabaseManager.loadAllAssessments()
+      
+      if (databaseAssessments.length > 0) {
+        // Database has data - use it as primary source
+        console.log('Using database as primary source for assessments')
+        return databaseAssessments
+      } else {
+        // Database is empty - check localStorage
+        const localStorageAssessments = this.getAllAssessments()
+        
+        if (localStorageAssessments.length > 0) {
+          // Sync localStorage to database for future multi-device access
+          console.log('Syncing localStorage to database...')
+          supabaseManager.syncAllLocalStorageToDatabase().catch(err => {
+            console.log('Background sync failed:', err)
+          })
+        }
+        
+        return localStorageAssessments
+      }
+    } catch (err) {
+      console.log('Database access failed, using localStorage:', err)
+      return this.getAllAssessments()
+    }
+  }
+
+  /**
+   * Enhanced method that loads assessment from database first
+   */
+  async getAssessmentWithDatabase(id: string): Promise<OrganizationalAssessment | null> {
+    try {
+      // Try database first
+      const databaseAssessment = await supabaseManager.loadAssessment(id)
+      if (databaseAssessment) {
+        return databaseAssessment
+      }
+    } catch (err) {
+      console.log('Database access failed for assessment, using localStorage:', err)
+    }
+    
+    // Fallback to localStorage
+    return this.getAssessment(id)
+  }
+
+  /**
+   * Check if database is available for multi-device functionality
+   */
+  async isDatabaseAvailable(): Promise<boolean> {
+    return await supabaseManager.isDatabaseAvailable()
   }
 }
