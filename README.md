@@ -24,9 +24,10 @@ Visit `http://localhost:3000` to access the platform.
 - Comparative analytics (management vs employee perspectives)
 - Anonymous employee response aggregation
 - Real-time participation tracking
-- Assessment lifecycle management with deletion functionality
+- Simplified assessment lifecycle with "Close Survey" functionality
 - Professional client presentation dashboards
 - Complete assessment deletion with data integrity protection
+- Unified department management with consolidated access code display
 
 ### ✅ Per-Assessment Question Management
 - Client-specific question customization for each assessment
@@ -88,5 +89,14 @@ Latest addition: **Phase 9 - Assessment Lifecycle Management**
 - Demo assessment management with intelligent recreation prevention
 - Admin restoration tools for testing and development workflows
 - 4 comprehensive deletion tests covering edge cases and error handling
+
+## 🆕 Latest Updates (August 2025)
+
+### Phase 10: Simplified Consultant Workflow
+- **Unified Components**: Consolidated AccessCodeDisplay and DepartmentManager into single expandable section
+- **Simplified Lifecycle**: Replaced confusing "Collecting/Ready/Lock" buttons with single "Close Survey" action
+- **Business Language**: Consultant-friendly terminology ("Survey Active/Closed" vs technical statuses)
+- **Data Preservation**: Full analytics access maintained after closing surveys
+- **Professional UX**: Orange warning button with clear confirmation dialog
 
 Built with ❤️ for Inbound's strategic consulting practice.

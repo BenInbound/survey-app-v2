@@ -8,7 +8,7 @@ import Logo from '@/components/ui/Logo'
 import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 import QuestionEditor from '@/components/ui/QuestionEditor'
 import DepartmentConfig from '@/components/ui/DepartmentConfig'
-import AccessCodeDisplay from '@/components/ui/AccessCodeDisplay'
+import DepartmentManager from '@/components/ui/DepartmentManager'
 
 export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
@@ -63,9 +63,21 @@ export default function ConsultantDashboard() {
     }
   }
 
-  const handleStatusChange = (assessmentId: string, newStatus: AssessmentStatus) => {
-    assessmentManager.updateAssessmentStatus(assessmentId, newStatus)
-    loadAssessments()
+  const handleCloseSurvey = (assessmentId: string, organizationName: string) => {
+    const isConfirmed = confirm(
+      `Close survey for "${organizationName}"?\n\nThis will:\n- Stop accepting new responses\n- Expire access codes\n- Lock the assessment for analysis\n\nYou can still view results, but participants cannot submit new responses.`
+    )
+    
+    if (isConfirmed) {
+      try {
+        assessmentManager.updateAssessmentStatus(assessmentId, 'locked')
+        loadAssessments()
+        alert('Survey closed successfully!')
+      } catch (error) {
+        console.error('Error closing survey:', error)
+        alert('Failed to close survey. Please try again.')
+      }
+    }
   }
 
   const handleRegenerateCode = (assessmentId: string) => {
@@ -101,11 +113,13 @@ export default function ConsultantDashboard() {
     }
   }
 
-  const getStatusColor = (status: AssessmentStatus) => {
+  const getStatusDisplay = (status: AssessmentStatus) => {
     switch (status) {
-      case 'collecting': return 'bg-secondary-100 text-secondary-800'
-      case 'ready': return 'bg-primary-100 text-primary-800'
-      case 'locked': return 'bg-neutral-100 text-neutral-800'
+      case 'collecting': 
+      case 'ready': 
+        return { text: 'Survey Active', color: 'bg-success-100 text-success-800', icon: '🟢' }
+      case 'locked': 
+        return { text: 'Survey Closed', color: 'bg-neutral-100 text-neutral-800', icon: '🔒' }
     }
   }
 
@@ -284,9 +298,15 @@ export default function ConsultantDashboard() {
                       <h3 className="text-lg font-semibold text-neutral-900">
                         {assessment.organizationName}
                       </h3>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(assessment.status)}`}>
-                        {assessment.status}
-                      </span>
+                      {(() => {
+                        const status = getStatusDisplay(assessment.status)
+                        return (
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${status.color}`}>
+                            <span>{status.icon}</span>
+                            {status.text}
+                          </span>
+                        )
+                      })()}
                     </div>
                     <div className="text-sm text-neutral-500">
                       Created {new Date(assessment.created).toLocaleDateString()}
@@ -322,49 +342,36 @@ export default function ConsultantDashboard() {
                     </a>
                   </div>
 
-                  {/* Access Code Section */}
-                  <AccessCodeDisplay
-                    assessment={assessment}
+                  {/* Department Management Section */}
+                  <DepartmentManager
+                    assessmentId={assessment.id}
+                    departments={assessment.departments || []}
+                    onDepartmentsChange={(departments) => {
+                      // Update the assessment with new departments
+                      const updatedAssessments = assessments.map(a =>
+                        a.id === assessment.id ? { ...a, departments } : a
+                      )
+                      setAssessments(updatedAssessments)
+                    }}
                     onRegenerateCode={handleRegenerateCode}
                     copyToClipboard={copyToClipboard}
-                    getAccessUrl={getAccessUrl}
+                    isLocked={assessment.status === 'locked'}
                   />
 
                   <div className="flex items-center justify-between">
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleStatusChange(assessment.id, 'collecting')}
-                        disabled={assessment.status === 'collecting'}
-                        className={`px-3 py-1 rounded-md text-sm font-medium ${
-                          assessment.status === 'collecting'
-                            ? 'bg-secondary-200 text-secondary-800 cursor-not-allowed'
-                            : 'bg-secondary-100 text-secondary-800 hover:bg-secondary-200'
-                        }`}
-                      >
-                        Collecting
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(assessment.id, 'ready')}
-                        disabled={assessment.status === 'ready' || assessment.responseCount.management + assessment.responseCount.employee === 0}
-                        className={`px-3 py-1 rounded-md text-sm font-medium ${
-                          assessment.status === 'ready' || (assessment.responseCount.management + assessment.responseCount.employee === 0)
-                            ? 'bg-primary-200 text-primary-800 cursor-not-allowed'
-                            : 'bg-primary-100 text-primary-800 hover:bg-primary-200'
-                        }`}
-                      >
-                        Ready
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(assessment.id, 'locked')}
-                        disabled={assessment.status === 'locked'}
-                        className={`px-3 py-1 rounded-md text-sm font-medium ${
-                          assessment.status === 'locked'
-                            ? 'bg-neutral-200 text-neutral-800 cursor-not-allowed'
-                            : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-                        }`}
-                      >
-                        Lock
-                      </button>
+                      {assessment.status !== 'locked' && (
+                        <button
+                          onClick={() => handleCloseSurvey(assessment.id, assessment.organizationName)}
+                          className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium flex items-center gap-1"
+                          title={`Close survey and stop accepting responses`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          Close Survey
+                        </button>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <button

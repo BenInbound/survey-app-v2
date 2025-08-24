@@ -461,6 +461,57 @@ export class OrganizationalAssessmentManager {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   }
 
+  // Add department to existing assessment
+  addDepartmentToAssessment(assessmentId: string, departmentName: string): Department {
+    const assessment = this.getAssessment(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+
+    // Prevent adding to locked assessments
+    if (assessment.status === 'locked') {
+      throw new Error('Cannot add department to locked assessment')
+    }
+
+    // Validate department name
+    if (!departmentName || typeof departmentName !== 'string' || departmentName.trim().length === 0) {
+      throw new Error('Department name is required')
+    }
+
+    const trimmedName = departmentName.trim()
+    
+    // Check if department already exists
+    const existingDepartment = assessment.departments.find(d => 
+      d.name.toLowerCase() === trimmedName.toLowerCase()
+    )
+    if (existingDepartment) {
+      throw new Error(`Department "${trimmedName}" already exists in this assessment`)
+    }
+
+    // Create new department with generated ID
+    const departmentId = trimmedName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    const newDepartment: Department = {
+      id: departmentId,
+      name: trimmedName,
+      managementCode: '',
+      employeeCode: ''
+    }
+
+    // Generate unique access codes
+    const [departmentWithCodes] = this.generateDepartmentAccessCodes(
+      assessment.organizationName,
+      [newDepartment]
+    )
+
+    // Add department to assessment
+    assessment.departments.push(departmentWithCodes)
+    
+    // Save updated assessment
+    this.saveAssessment(assessment)
+
+    return departmentWithCodes
+  }
+
   // Delete assessment and all related data
   deleteAssessment(assessmentId: string): void {
     if (typeof window === 'undefined') return

@@ -25,6 +25,9 @@ Object.assign(navigator, {
 // Mock alert
 global.alert = jest.fn()
 
+// Mock authentication guard to always pass
+jest.mock('@/components/ui/ConsultantAuthGuard')
+
 const mockManager = OrganizationalAssessmentManager as jest.MockedClass<typeof OrganizationalAssessmentManager>
 
 describe('ConsultantDashboard - Access Code Management', () => {
@@ -205,12 +208,12 @@ describe('ConsultantDashboard - Access Code Management', () => {
     expect(mockCreateAssessment).toHaveBeenCalledWith('New Organization', 'guro@inbound.com')
   })
 
-  it('maintains assessment lifecycle controls', () => {
+  it('shows simplified survey controls', () => {
     render(<ConsultantDashboard />)
     
-    expect(screen.getByRole('button', { name: 'Collecting' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Ready' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Lock' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'View Results' })).toBeInTheDocument()
+    // Should show status displays instead of control buttons
+    expect(screen.getByText(/Survey Active|Survey Closed/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Close Survey/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'View Assessment Results' })).toBeInTheDocument()
   })
 })
