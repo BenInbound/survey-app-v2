@@ -123,7 +123,21 @@ export default function AccessCodeDisplay({
                 <li>Share <strong>management codes</strong> with department leaders</li>
                 <li>Share <strong>employee codes</strong> with team members in each department</li>
                 <li>Each code provides role-appropriate survey access</li>
-                <li>Participants visit: <code className="bg-blue-100 px-1 rounded font-mono text-xs">{getAccessUrl()}/[code]</code></li>
+                <li className="flex items-center gap-2">
+                  <span>Participants visit:</span>
+                  <div className="flex items-center gap-1">
+                    <code className="bg-blue-100 px-1 rounded font-mono text-xs">{getAccessUrl()}/[code]</code>
+                    <button
+                      onClick={() => copyToClipboard(`${getAccessUrl()}/[code]`, 'Survey URL')}
+                      className="p-1 hover:bg-blue-200 rounded transition-colors"
+                      title="Copy survey URL template"
+                    >
+                      <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                </li>
               </ul>
             </div>
           </div>
@@ -174,7 +188,21 @@ export default function AccessCodeDisplay({
         <ol className="list-decimal list-inside mt-2 space-y-1">
           <li>Share this access code with your client contact (HR/Management)</li>
           <li>Client distributes code to employees and management via internal channels</li>
-          <li>Participants visit: <code className="bg-primary-100 px-1 rounded">{getAccessUrl()}</code></li>
+          <li className="flex items-center gap-2">
+            <span>Participants visit:</span>
+            <div className="flex items-center gap-1">
+              <code className="bg-primary-100 px-1 rounded">{getAccessUrl()}</code>
+              <button
+                onClick={() => copyToClipboard(getAccessUrl(), 'Survey URL')}
+                className="p-1 hover:bg-primary-200 rounded transition-colors"
+                title="Copy survey URL"
+              >
+                <svg className="w-3 h-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+          </li>
           <li>Participants enter the access code to begin their assessment</li>
         </ol>
       </div>

@@ -314,7 +314,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             // Override department field with department from access code if available
             department: department || nextSession.department
           }
-          assessmentManager.addParticipantResponse(assessmentId, participantResponse)
+          await assessmentManager.addParticipantResponse(assessmentId, participantResponse)
         }
         
         // All participants go to thank you page - no results access

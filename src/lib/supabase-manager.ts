@@ -192,7 +192,6 @@ export class SupabaseManager {
     
     try {
       const databaseResponse = {
-        id: response.participantId, // Use participantId as primary key
         assessment_id: response.assessmentId,
         participant_id: response.participantId,
         role: response.role,
