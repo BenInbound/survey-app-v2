@@ -5,7 +5,7 @@ import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment
 import { OrganizationalAssessment, ComparativeAnalysis } from '@/lib/types'
 import { ComparativeSpiderChart } from '@/components/ui/ComparativeSpiderChart'
 import { generateOrganizationalSummary } from '@/lib/ai-summary'
-import { createDemoAssessment } from '@/lib/demo-data'
+import { createDemoAssessment, refreshDemoAssessment } from '@/lib/demo-data'
 import Logo from '@/components/ui/Logo'
 
 interface ConsultantResultsProps {
@@ -30,7 +30,8 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
     try {
       // Ensure demo assessment exists if this is the demo
       if (assessmentId === 'demo-org') {
-        createDemoAssessment()
+        // Force refresh demo data to fix any data structure issues
+        refreshDemoAssessment()
       }
       
       const assessmentData = assessmentManager.getAssessment(assessmentId)

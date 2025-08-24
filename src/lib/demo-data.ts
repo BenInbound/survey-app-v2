@@ -1,13 +1,18 @@
 import { OrganizationalAssessmentManager } from './organizational-assessment-manager'
 import { ParticipantResponse, SliderValue, Department } from './types'
 
-export function createDemoAssessment() {
+export function createDemoAssessment(forceRecreate = false) {
   const assessmentManager = new OrganizationalAssessmentManager()
   
   // Check if demo already exists
   const existing = assessmentManager.getAssessment('demo-org')
-  if (existing) {
+  if (existing && !forceRecreate) {
     return existing
+  }
+  
+  // If force recreating, delete the existing assessment first
+  if (forceRecreate && existing) {
+    assessmentManager.deleteAssessment('demo-org')
   }
   
   // Check if demo was intentionally deleted (don't recreate if user deleted it)
@@ -370,5 +375,10 @@ export function restoreDemoAssessment() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('demo-assessment-deleted')
   }
-  return createDemoAssessment()
+  return createDemoAssessment(true) // Force recreation
+}
+
+// Function to force refresh demo data (fix data issues)
+export function refreshDemoAssessment() {
+  return createDemoAssessment(true) // Force recreation
 }

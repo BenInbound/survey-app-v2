@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getAllSurveyData, clearAllSurveyData } from '@/lib/survey-logic'
 import { ParticipantSession } from '@/lib/types'
-import { restoreDemoAssessment } from '@/lib/demo-data'
+import { restoreDemoAssessment, refreshDemoAssessment } from '@/lib/demo-data'
 import Logo from '@/components/ui/Logo'
 // import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 
@@ -35,6 +35,16 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error restoring demo assessment:', error)
       alert('Failed to restore demo assessment. Please try again.')
+    }
+  }
+
+  const handleRefreshDemo = () => {
+    try {
+      refreshDemoAssessment()
+      alert('Demo data refreshed successfully! This fixes any data structure issues.')
+    } catch (error) {
+      console.error('Error refreshing demo data:', error)
+      alert('Failed to refresh demo data. Please try again.')
     }
   }
 
@@ -133,6 +143,14 @@ export default function AdminPage() {
               title="Restore the Demo Organization assessment if it was deleted"
             >
               Restore Demo Assessment
+            </button>
+
+            <button
+              onClick={handleRefreshDemo}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              title="Force refresh demo data to fix data structure issues (like 0/10 scores)"
+            >
+              🔄 Refresh Demo Data
             </button>
           </div>
         </div>
