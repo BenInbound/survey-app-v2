@@ -147,7 +147,7 @@ export class AccessController {
   private sanitizeDepartmentCode(departmentCode: string): string {
     return departmentCode
       .replace(/[^a-zA-Z0-9]/g, '') // Remove all special chars
-      .substring(0, 3) // Limit to 3 chars to leave room for year
+      .substring(0, 8) // Allow up to 8 chars to preserve full department names
       .toUpperCase()
   }
 
