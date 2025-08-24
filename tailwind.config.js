@@ -17,7 +17,7 @@ module.exports = {
         'custom-gray': '#F8F8F4'
       },
       fontFamily: {
-        'sans': ['TT Norms Pro', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        'sans': ['Kumbh Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       }
     },
   },

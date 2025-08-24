@@ -133,7 +133,7 @@ export default function ConsultantDashboard() {
                   onClick={() => setQuestionManagerAssessmentId(null)}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  ✕ Close
+                  Close
                 </button>
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function ConsultantDashboard() {
                       href={`/consultant/results/${assessment.id}`}
                       className="bg-rose-600 text-white px-8 py-3 rounded-lg hover:bg-rose-700 transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
                     >
-                      📊 View Assessment Results
+                      View Assessment Results
                     </a>
                   </div>
 
@@ -358,7 +358,7 @@ export default function ConsultantDashboard() {
                       onClick={() => setQuestionManagerAssessmentId(assessment.id)}
                       className="bg-rose-600 text-white px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors text-sm font-medium"
                     >
-                      📝 Manage Questions
+                      Manage Questions
                     </button>
                   </div>
                 </div>
