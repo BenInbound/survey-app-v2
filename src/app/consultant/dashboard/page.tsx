@@ -97,7 +97,7 @@ export default function ConsultantDashboard() {
 
   const handleRegenerateCode = async (assessmentId: string) => {
     try {
-      assessmentManager.regenerateAccessCode(assessmentId)
+      await assessmentManager.regenerateAccessCode(assessmentId)
       await loadAssessments()
       // Show success feedback
       alert('Access code regenerated successfully!')
@@ -118,7 +118,7 @@ export default function ConsultantDashboard() {
           localStorage.setItem('demo-assessment-deleted', 'true')
         }
         
-        assessmentManager.deleteAssessment(assessmentId)
+        await assessmentManager.deleteAssessment(assessmentId)
         await loadAssessments()
         alert('Assessment deleted successfully!')
       } catch (error) {
