@@ -6,7 +6,8 @@ import {
   ParticipantResponse,
   ParticipantRole,
   AssessmentQuestionSetup,
-  Question
+  Question,
+  Department
 } from './types'
 import { AccessController } from './access-control'
 import { questionTemplateManager } from './question-templates'
@@ -20,10 +21,16 @@ export class OrganizationalAssessmentManager {
     organizationName: string, 
     consultantId: string, 
     questionSetup?: AssessmentQuestionSetup,
+    departments?: Department[],
     id?: string
   ): OrganizationalAssessment {
     const questions = this.getQuestionsForSetup(questionSetup)
     
+    // Generate department access codes if departments are provided
+    const departmentsWithCodes = departments ? 
+      this.generateDepartmentAccessCodes(organizationName, departments) : 
+      []
+
     const assessment: OrganizationalAssessment = {
       id: id || this.generateId(),
       organizationName,
@@ -31,8 +38,10 @@ export class OrganizationalAssessmentManager {
       status: 'collecting',
       created: new Date(),
       accessCode: this.accessController.generateAccessCode(organizationName),
+      departments: departmentsWithCodes,  // NEW: Use departments with generated codes
       questions,
       questionSource: questionSetup || { source: 'default' },
+      departmentData: [], // NEW: Start with empty department data
       managementResponses: {
         categoryAverages: [],
         overallAverage: 0,
@@ -80,6 +89,15 @@ export class OrganizationalAssessmentManager {
     // Ensure questionSource exists
     if (!assessment.questionSource) {
       assessment.questionSource = { source: 'default' }
+    }
+    
+    // Ensure new department fields exist (migration from legacy assessments)
+    if (!assessment.departments) {
+      assessment.departments = []
+    }
+    
+    if (!assessment.departmentData) {
+      assessment.departmentData = []
     }
     
     return assessment as OrganizationalAssessment
@@ -154,12 +172,16 @@ export class OrganizationalAssessmentManager {
     const managementResponses = this.getParticipantResponses(assessmentId, 'management')
     const employeeResponses = this.getParticipantResponses(assessmentId, 'employee')
 
+    // Update legacy aggregated data (for compatibility)
     assessment.managementResponses = this.aggregateResponses(managementResponses)
     assessment.employeeResponses = this.aggregateResponses(employeeResponses)
     assessment.responseCount = {
       management: managementResponses.length,
       employee: employeeResponses.length
     }
+
+    // NEW: Update department-specific aggregated data
+    assessment.departmentData = this.aggregateDepartmentData(assessmentId)
 
     this.saveAllAssessments(assessments)
   }
@@ -309,6 +331,109 @@ export class OrganizationalAssessmentManager {
     
     assessment.questions = questions
     this.saveAssessment(assessment)
+  }
+
+  // NEW: Department management methods
+  updateAssessmentDepartments(assessmentId: string, departments: Department[]): void {
+    const assessment = this.getAssessment(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+    
+    assessment.departments = departments
+    this.saveAssessment(assessment)
+  }
+
+  getAssessmentDepartments(assessmentId: string): Department[] {
+    const assessment = this.getAssessment(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+    
+    return assessment.departments || []
+  }
+
+  generateDepartmentAccessCodes(organizationName: string, departments: Department[]): Department[] {
+    return departments.map(dept => ({
+      ...dept,
+      managementCode: this.accessController.generateDepartmentAccessCode(organizationName, 'management', dept.id),
+      employeeCode: this.accessController.generateDepartmentAccessCode(organizationName, 'employee', dept.id)
+    }))
+  }
+
+  regenerateDepartmentAccessCodes(assessmentId: string): OrganizationalAssessment {
+    const assessment = this.getAssessment(assessmentId)
+    if (!assessment) {
+      throw new Error(`Assessment not found: ${assessmentId}`)
+    }
+
+    // Regenerate all department access codes
+    assessment.departments = this.generateDepartmentAccessCodes(
+      assessment.organizationName, 
+      assessment.departments
+    )
+    
+    this.saveAssessment(assessment)
+    return assessment
+  }
+
+  // NEW: Aggregate data by department
+  private aggregateDepartmentData(assessmentId: string): import('./types').AggregatedDepartmentData[] {
+    const allResponses = this.getParticipantResponses(assessmentId)
+    const assessment = this.getAssessment(assessmentId)
+    
+    if (!assessment || assessment.departments.length === 0) {
+      return []
+    }
+
+    return assessment.departments.map(dept => {
+      const deptMgmtResponses = allResponses.filter(r => r.department === dept.id && r.role === 'management')
+      const deptEmpResponses = allResponses.filter(r => r.department === dept.id && r.role === 'employee')
+      
+      const mgmtAggregated = this.aggregateResponses(deptMgmtResponses)
+      const empAggregated = this.aggregateResponses(deptEmpResponses)
+      
+      // Calculate perception gaps
+      const perceptionGaps = this.calculatePerceptionGaps(mgmtAggregated, empAggregated)
+      
+      return {
+        department: dept.id,
+        departmentName: dept.name,
+        managementResponses: mgmtAggregated,
+        employeeResponses: empAggregated,
+        responseCount: {
+          management: deptMgmtResponses.length,
+          employee: deptEmpResponses.length
+        },
+        perceptionGaps
+      }
+    })
+  }
+
+  // NEW: Calculate perception gaps between management and employee responses
+  private calculatePerceptionGaps(mgmtResponses: import('./types').AggregatedResponses, empResponses: import('./types').AggregatedResponses): import('./types').CategoryGap[] {
+    const gaps: import('./types').CategoryGap[] = []
+    
+    // Create a map of employee category averages for quick lookup
+    const empCategoryMap = new Map(
+      empResponses.categoryAverages.map(cat => [cat.category, cat.average])
+    )
+    
+    mgmtResponses.categoryAverages.forEach(mgmtCat => {
+      const empAverage = empCategoryMap.get(mgmtCat.category) || 0
+      const gap = mgmtCat.average - empAverage
+      
+      gaps.push({
+        category: mgmtCat.category,
+        managementScore: mgmtCat.average,
+        employeeScore: empAverage,
+        gap,
+        gapDirection: gap > 0 ? 'positive' : gap < 0 ? 'negative' : 'neutral',
+        significance: Math.abs(gap) >= 2 ? 'high' : Math.abs(gap) > 1 ? 'medium' : 'low'
+      })
+    })
+    
+    return gaps
   }
 
   getAssessmentQuestions(assessmentId: string) {

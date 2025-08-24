@@ -110,6 +110,34 @@ export interface ProgressBarProps {
 export type ParticipantRole = 'management' | 'employee'
 export type AssessmentStatus = 'collecting' | 'ready' | 'locked'
 
+// Department Types
+export interface Department {
+  id: string                         // "HR", "ENG", "SAL", "OPS"
+  name: string                       // "Human Resources", "Engineering"
+  managementCode: string             // "STORK-MGMT-HR25"
+  employeeCode: string               // "STORK-EMP-HR25"
+  expectedParticipants?: {           // Optional: for tracking
+    management: number
+    employee: number
+  }
+}
+
+export interface DepartmentAccessCode {
+  department: string
+  role: ParticipantRole
+  code: string
+  assessmentId: string
+}
+
+export interface AccessCodeParseResult {
+  isValid: boolean
+  assessmentId?: string
+  role?: ParticipantRole
+  department?: string
+  organizationName?: string
+  errors?: string[]
+}
+
 export interface CategoryAverage {
   category: string
   average: number
@@ -130,16 +158,22 @@ export interface OrganizationalAssessment {
   created: Date
   lockedAt?: Date
   
-  // Access control
+  // Access control (legacy single code - maintained for compatibility)
   accessCode: string
   codeExpiration?: Date
   codeRegeneratedAt?: Date
+  
+  // Department configuration (NEW)
+  departments: Department[]           // Department configuration
   
   // Assessment-specific questions
   questions: Question[]
   questionSource: AssessmentQuestionSetup
   
-  // Anonymous aggregated data only
+  // Anonymous aggregated data by department (NEW)
+  departmentData: AggregatedDepartmentData[]
+  
+  // Legacy aggregated data (kept for compatibility)
   managementResponses: AggregatedResponses
   employeeResponses: AggregatedResponses
   responseCount: { management: number, employee: number }
@@ -175,10 +209,51 @@ export interface ComparativeAnalysis {
   recommendations: string[]
 }
 
+export interface AggregatedDepartmentData {
+  department: string
+  departmentName: string
+  managementResponses: AggregatedResponses
+  employeeResponses: AggregatedResponses
+  responseCount: { management: number, employee: number }
+  perceptionGaps: CategoryGap[]      // NEW: Mgmt vs Employee gaps by category
+}
+
+export interface CategoryGap {
+  category: string
+  managementScore: number
+  employeeScore: number
+  gap: number
+  gapDirection: 'positive' | 'negative' | 'neutral'  // positive = mgmt higher, negative = employee higher
+  significance: 'high' | 'medium' | 'low'
+}
+
+export interface DepartmentalInsights {
+  highestPerformingDepartment: {
+    department: string
+    score: number
+  }
+  lowestPerformingDepartment: {
+    department: string  
+    score: number
+  }
+  categoryVariation: {
+    category: string
+    variation: number  // Standard deviation across departments
+    departments: { department: string, score: number }[]
+  }[]
+  departmentGaps: {
+    department: string
+    averageGap: number
+    criticalCategories: string[]
+  }[]
+}
+
 export interface AccessCodeValidation {
   code: string
   assessmentId: string
   organizationName: string
+  role?: ParticipantRole              // NEW: Role extracted from department codes (optional for legacy)
+  department?: string                 // NEW: Department extracted from department codes (optional for legacy)
   isValid: boolean
   isExpired?: boolean
   expiresAt?: Date

@@ -188,6 +188,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const searchParams = useSearchParams()
   const role = searchParams.get('role') as ParticipantRole | null
   const code = searchParams.get('code')
+  const department = searchParams.get('department') // NEW: Extract department from URL
   
   const [surveyManager] = useState(() => new SurveyManager(assessmentId))
   const [assessmentManager] = useState(() => new OrganizationalAssessmentManager())
@@ -301,7 +302,9 @@ export default function SurveyPage({ params }: SurveyPageProps) {
           const participantResponse: ParticipantResponse = {
             ...nextSession,
             role,
-            assessmentId
+            assessmentId,
+            // Override department field with department from access code if available
+            department: department || nextSession.department
           }
           assessmentManager.addParticipantResponse(assessmentId, participantResponse)
         }

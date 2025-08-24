@@ -16,7 +16,7 @@ export function createDemoAssessment() {
   }
 
   // Create demo assessment with fixed ID
-  const demoAssessment = assessmentManager.createAssessment('Demo Organization', 'demo@consultant.com', undefined, 'demo-org')
+  const demoAssessment = assessmentManager.createAssessment('Demo Organization', 'demo@consultant.com', undefined, undefined, 'demo-org')
   
   // Set fixed access code for demo by directly updating localStorage
   if (typeof window !== 'undefined') {

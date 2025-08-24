@@ -40,6 +40,10 @@ describe('AccessController', () => {
       status: 'collecting',
       created: new Date(),
       accessCode: 'TESTORG-2025-STRATEGY',
+      departments: [],
+      questions: [],
+      questionSource: { source: 'default' },
+      departmentData: [],
       managementResponses: { categoryAverages: [], overallAverage: 0, responseCount: 0 },
       employeeResponses: { categoryAverages: [], overallAverage: 0, responseCount: 0 },
       responseCount: { management: 0, employee: 0 }
@@ -90,6 +94,10 @@ describe('AccessController', () => {
         status: 'collecting',
         created: new Date(),
         accessCode: 'TEST-CODE',
+        departments: [],
+        questions: [],
+        questionSource: { source: 'default' },
+        departmentData: [],
         managementResponses: { categoryAverages: [], overallAverage: 0, responseCount: 0 },
         employeeResponses: { categoryAverages: [], overallAverage: 0, responseCount: 0 },
         responseCount: { management: 0, employee: 0 }
@@ -112,6 +120,10 @@ describe('AccessController', () => {
         created: new Date(),
         accessCode: 'OLD-CODE',
         codeExpiration: new Date(), // Has expiration
+        departments: [],
+        questions: [],
+        questionSource: { source: 'default' },
+        departmentData: [],
         managementResponses: { categoryAverages: [], overallAverage: 0, responseCount: 0 },
         employeeResponses: { categoryAverages: [], overallAverage: 0, responseCount: 0 },
         responseCount: { management: 0, employee: 0 }

@@ -40,7 +40,7 @@ describe('QuestionManager', () => {
     assessmentManager = new OrganizationalAssessmentManager()
     
     // Create a test assessment for the QuestionManager to work with
-    assessmentManager.createAssessment('Test Organization', 'test@consultant.com', undefined, testAssessmentId)
+    assessmentManager.createAssessment('Test Organization', 'test@consultant.com', undefined, undefined, testAssessmentId)
     
     questionManager = new QuestionManager(testAssessmentId)
   })

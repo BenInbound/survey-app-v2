@@ -41,10 +41,16 @@ export default function AccessCodeEntry({ params, searchParams }: AccessCodeEntr
         return
       }
 
-      // Valid code - redirect to survey with role
-      const role = searchParams.role || 'employee'
-      const targetUrl = `/survey/${validation.assessmentId}?role=${role}&code=${code}`
-      console.log('Redirecting to:', targetUrl) // Debug log
+      // Valid code - redirect to survey with role from access code or fallback
+      const role = validation.role || searchParams.role || 'employee'
+      const department = validation.department // May be undefined for legacy codes
+      
+      let targetUrl = `/survey/${validation.assessmentId}?role=${role}&code=${code}`
+      if (department) {
+        targetUrl += `&department=${department}`
+      }
+      
+      console.log('Redirecting to:', targetUrl, 'Role:', role, 'Department:', department) // Debug log
       router.push(targetUrl)
       
     } catch (error) {

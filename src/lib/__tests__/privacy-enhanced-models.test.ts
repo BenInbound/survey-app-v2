@@ -81,6 +81,10 @@ describe('Privacy Enhancement Service', () => {
     status: 'collecting',
     created: new Date(),
     accessCode: 'TEST-2025-STRATEGY',
+    departments: [],
+    questions: [],
+    questionSource: { source: 'default' },
+    departmentData: [],
     managementResponses: {
       categoryAverages: [{ category: 'strategic-alignment', average: 7.5, responses: 5 }],
       overallAverage: 7.5,

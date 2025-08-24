@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { OrganizationalAssessment, AssessmentStatus } from '@/lib/types'
+import { OrganizationalAssessment, AssessmentStatus, Department } from '@/lib/types'
 import { OrganizationalAssessmentManager } from '@/lib/organizational-assessment-manager'
 import { createDemoAssessment, fixDemoAssessmentStatus } from '@/lib/demo-data'
 import Logo from '@/components/ui/Logo'
 import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 import QuestionEditor from '@/components/ui/QuestionEditor'
+import DepartmentConfig from '@/components/ui/DepartmentConfig'
+import AccessCodeDisplay from '@/components/ui/AccessCodeDisplay'
 
 export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
@@ -14,7 +16,8 @@ export default function ConsultantDashboard() {
   const [questionManagerAssessmentId, setQuestionManagerAssessmentId] = useState<string | null>(null)
   const [newAssessment, setNewAssessment] = useState({
     organizationName: '',
-    consultantId: 'guro@inbound.com' // Default for demo
+    consultantId: 'guro@inbound.com', // Default for demo
+    departments: [] as Department[]
   })
 
   const assessmentManager = new OrganizationalAssessmentManager()
@@ -38,11 +41,13 @@ export default function ConsultantDashboard() {
     try {
       const assessment = assessmentManager.createAssessment(
         newAssessment.organizationName,
-        newAssessment.consultantId
+        newAssessment.consultantId,
+        undefined, // questionSetup
+        newAssessment.departments
       )
 
       setAssessments(prev => [assessment, ...prev])
-      setNewAssessment({ organizationName: '', consultantId: 'guro@inbound.com' })
+      setNewAssessment({ organizationName: '', consultantId: 'guro@inbound.com', departments: [] })
       setShowCreateForm(false)
     } catch (error) {
       console.error('Error creating assessment:', error)
@@ -153,7 +158,7 @@ export default function ConsultantDashboard() {
         {/* Create Assessment Modal */}
         {showCreateForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-8 w-full max-w-md mx-4">
+            <div className="bg-white rounded-xl p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
               <h2 className="text-2xl font-bold text-neutral-900 mb-6">
                 Create New Assessment
               </h2>
@@ -187,6 +192,13 @@ export default function ConsultantDashboard() {
                     className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
+                
+                {/* Department Configuration */}
+                <DepartmentConfig
+                  departments={newAssessment.departments}
+                  onDepartmentsChange={(departments) => setNewAssessment(prev => ({ ...prev, departments }))}
+                  organizationName={newAssessment.organizationName || 'Organization'}
+                />
               </div>
               <div className="flex gap-3 mt-6">
                 <button
@@ -281,51 +293,12 @@ export default function ConsultantDashboard() {
                   </div>
 
                   {/* Access Code Section */}
-                  <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold text-primary-900">
-                        <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        Assessment Access Code
-                      </h4>
-                      <button
-                        onClick={() => handleRegenerateCode(assessment.id)}
-                        disabled={assessment.status === 'locked'}
-                        className={`text-sm px-3 py-1 rounded ${
-                          assessment.status === 'locked' 
-                            ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' 
-                            : 'bg-primary-200 text-primary-800 hover:bg-primary-300'
-                        }`}
-                      >
-                        Regenerate Code
-                      </button>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg p-4 border border-primary-200">
-                      <div className="flex items-center justify-between">
-                        <div className="font-mono text-2xl font-bold text-primary-900 tracking-wider">
-                          {assessment.accessCode}
-                        </div>
-                        <button
-                          onClick={() => copyToClipboard(assessment.accessCode, 'Access code')}
-                          className="bg-secondary-600 text-white px-4 py-2 rounded-lg hover:bg-secondary-700 transition-colors text-sm font-medium"
-                        >
-                          Copy Code
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 text-sm text-primary-800">
-                      <strong>Distribution Instructions:</strong>
-                      <ol className="list-decimal list-inside mt-2 space-y-1">
-                        <li>Share this access code with your client contact (HR/Management)</li>
-                        <li>Client distributes code to employees and management via internal channels</li>
-                        <li>Participants visit: <code className="bg-primary-100 px-1 rounded">{getAccessUrl()}</code></li>
-                        <li>Participants enter the access code to begin their assessment</li>
-                      </ol>
-                    </div>
-                  </div>
+                  <AccessCodeDisplay
+                    assessment={assessment}
+                    onRegenerateCode={handleRegenerateCode}
+                    copyToClipboard={copyToClipboard}
+                    getAccessUrl={getAccessUrl}
+                  />
 
                   <div className="flex items-center justify-between">
                     <div className="flex gap-2">
