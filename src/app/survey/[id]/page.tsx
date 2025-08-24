@@ -257,8 +257,11 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   }, [assessmentId, role, code, assessmentManager, router])
 
   // Handle starting the actual survey
-  const handleStartSurvey = () => {
+  const handleStartSurvey = async () => {
     try {
+      // Initialize questions cache first
+      await surveyManager.initializeQuestions()
+      
       // Generate session storage key that includes role
       const sessionKey = `${assessmentId}-${role}-${Date.now().toString().slice(-6)}`
 
@@ -288,7 +291,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
     setCurrentValue(value)
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!session || !currentValue) return
 
     try {
@@ -300,7 +303,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       setSession(nextSession)
       
       // Check if survey is complete
-      if (surveyManager.isComplete(nextSession)) {
+      const isComplete = await surveyManager.isComplete(nextSession)
+      if (isComplete) {
         // Save as ParticipantResponse for organizational assessment
         if (role) {
           const participantResponse: ParticipantResponse = {

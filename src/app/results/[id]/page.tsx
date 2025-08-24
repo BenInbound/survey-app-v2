@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { SurveyManager } from '@/lib/survey-logic'
-import { ParticipantSession } from '@/lib/types'
+import { ParticipantSession, Question } from '@/lib/types'
 import { SpiderChart, CategoryAverage } from '@/components/ui/SpiderChart'
 import { SummaryCard } from '@/components/ui/SummaryCard'
 import Logo from '@/components/ui/Logo'
@@ -15,12 +15,21 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const { id: surveyId } = params
   const [manager] = useState(() => new SurveyManager(surveyId))
   const [session, setSession] = useState<ParticipantSession | null>(null)
+  const [questions, setQuestions] = useState<Question[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const storedSession = manager.getStoredSession()
-    setSession(storedSession)
-    setIsLoading(false)
+    const initializeData = async () => {
+      const storedSession = manager.getStoredSession()
+      if (storedSession) {
+        const questionsData = await manager.getQuestions()
+        setQuestions(questionsData)
+      }
+      setSession(storedSession)
+      setIsLoading(false)
+    }
+    
+    initializeData()
   }, [manager])
 
   const handleStartNew = () => {
@@ -36,7 +45,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     )
   }
 
-  if (!session || !manager.isComplete(session)) {
+  if (!session || questions.length === 0 || session.responses.length !== questions.length) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
@@ -58,7 +67,6 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   }
 
   // Group responses by category
-  const questions = manager.getQuestions()
   const responsesByCategory: Record<string, Array<{ question: string; score: number }>> = {}
   
   session.responses.forEach(response => {

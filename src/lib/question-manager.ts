@@ -32,13 +32,13 @@ export class QuestionManager {
     }
   }
 
-  saveQuestions(questions: Question[]): void {
+  async saveQuestions(questions: Question[]): Promise<void> {
     const validation = this.validateQuestions(questions)
     if (!validation.isValid) {
       throw new Error(`Invalid questions: ${validation.errors.join(', ')}`)
     }
 
-    const normalizedQuestions = this.normalizeQuestions(questions)
+    const normalizedQuestions = await this.normalizeQuestions(questions)
     this.assessmentManager.updateAssessmentQuestions(this.assessmentId, normalizedQuestions)
   }
 
@@ -49,14 +49,14 @@ export class QuestionManager {
       throw new Error(`Invalid questions: ${validation.errors.join(', ')}`)
     }
 
-    const normalizedQuestions = this.normalizeQuestions(questions)
+    const normalizedQuestions = await this.normalizeQuestions(questions)
     await this.assessmentManager.updateAssessmentQuestions(this.assessmentId, normalizedQuestions)
   }
 
   async addQuestion(questionData: QuestionFormData): Promise<Question> {
     const questions = await this.getQuestions()
     const newQuestion: Question = {
-      id: this.generateQuestionId(questionData.text),
+      id: await this.generateQuestionId(questionData.text),
       text: questionData.text.trim(),
       category: questionData.category.trim(),
       order: Math.max(...questions.map(q => q.order), 0) + 1
@@ -191,17 +191,16 @@ export class QuestionManager {
   }
 
 
-  private normalizeQuestions(questions: Question[]): Question[] {
-    return questions
-      .map((q, index) => ({
-        ...q,
-        id: q.id || this.generateQuestionId(q.text),
-        order: index + 1
-      }))
-      .sort((a, b) => a.order - b.order)
+  private async normalizeQuestions(questions: Question[]): Promise<Question[]> {
+    const normalizedQuestions = await Promise.all(questions.map(async (q, index) => ({
+      ...q,
+      id: q.id || await this.generateQuestionId(q.text),
+      order: index + 1
+    })))
+    return normalizedQuestions.sort((a, b) => a.order - b.order)
   }
 
-  private generateQuestionId(text: string): string {
+  private async generateQuestionId(text: string): Promise<string> {
     const baseId = text
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
@@ -211,7 +210,7 @@ export class QuestionManager {
       || 'question'
     
     // Check if ID already exists
-    const existingQuestions = this.getQuestions()
+    const existingQuestions = await this.getQuestions()
     const existingIds = new Set(existingQuestions.map(q => q.id))
     
     let finalId = baseId

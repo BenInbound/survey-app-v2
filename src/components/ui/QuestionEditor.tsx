@@ -19,6 +19,7 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isUsingDefaults, setIsUsingDefaults] = useState(false)
 
   const questionManager = useMemo(() => new QuestionManager(assessmentId), [assessmentId])
 
@@ -29,6 +30,7 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
       const currentQuestions = await questionManager.getQuestionsAsync()
       setQuestions(currentQuestions || [])
       setAvailableCategories(await questionManager.getAvailableCategories())
+      setIsUsingDefaults(await questionManager.isUsingDefaults())
       onQuestionsChange?.()
     } catch (error) {
       console.error('Failed to load questions from database, trying localStorage:', error)
@@ -37,6 +39,7 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
         const currentQuestions = await questionManager.getQuestions()
         setQuestions(currentQuestions || [])
         setAvailableCategories(await questionManager.getAvailableCategories())
+        setIsUsingDefaults(await questionManager.isUsingDefaults())
         onQuestionsChange?.()
       } catch (fallbackError) {
         console.error('Failed to load questions:', fallbackError)
@@ -162,7 +165,7 @@ export default function QuestionEditor({ assessmentId, onQuestionsChange }: Ques
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Manage Questions</h3>
           <p className="text-sm text-gray-600">
-            {questions.length} questions • {questionManager.isUsingDefaults() ? 'Using defaults' : 'Custom questions'}
+            {questions.length} questions • {isUsingDefaults ? 'Using defaults' : 'Custom questions'}
           </p>
         </div>
         <div className="flex gap-2">

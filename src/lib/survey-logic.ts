@@ -4,14 +4,26 @@ import { QuestionManager } from './question-manager'
 export class SurveyManager {
   private storageKey: string
   private questionManager: QuestionManager
+  private questionsCache: Question[] | null = null
 
   constructor(assessmentId: string) {
     this.storageKey = `survey-session-${assessmentId}`
     this.questionManager = new QuestionManager(assessmentId)
   }
 
+  private getQuestionsSync(): Question[] {
+    if (this.questionsCache === null) {
+      throw new Error('Questions not loaded. Call initializeQuestions() first.')
+    }
+    return this.questionsCache
+  }
+
+  async initializeQuestions(): Promise<void> {
+    this.questionsCache = await this.getQuestions()
+  }
+
   getCurrentQuestion(session: ParticipantSession): Question | null {
-    const questions = this.getQuestions()
+    const questions = this.getQuestionsSync()
     if (session.currentQuestionIndex >= questions.length) {
       return null
     }
@@ -37,7 +49,7 @@ export class SurveyManager {
   }
 
   navigateToNext(session: ParticipantSession): ParticipantSession {
-    const questions = this.getQuestions()
+    const questions = this.getQuestionsSync()
     const nextIndex = session.currentQuestionIndex + 1
     
     const updatedSession = {
@@ -51,7 +63,7 @@ export class SurveyManager {
   }
 
   calculateProgress(session: ParticipantSession): SurveyProgress {
-    const questions = this.getQuestions()
+    const questions = this.getQuestionsSync()
     const totalQuestions = questions.length
     const currentIndex = session.currentQuestionIndex
     
