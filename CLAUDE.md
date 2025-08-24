@@ -340,8 +340,8 @@ The platform now includes:
 - Data structure mirrors planned Supabase schema for easy migration
 
 ### Testing Coverage
-- Comprehensive test suite covering all core functionality (336+ tests total)
-- Component tests for SliderInput, ProgressBar, SpiderChart, SummaryCard, and QuestionEditor
+- Comprehensive test suite covering all core functionality (376+ tests total)
+- Component tests for SliderInput, ProgressBar, SpiderChart, SummaryCard, QuestionEditor, AccessCodeDisplay, and DepartmentConfig
 - Logic tests for survey management, question management, data persistence, and AI summary generation
 - Integration tests ensuring components work together across user flows
 - **Per-Assessment Question Management Tests**: 38 comprehensive tests covering:
@@ -353,6 +353,11 @@ The platform now includes:
   - Question reordering and category management within assessment scope
   - Template selection and question source options (default, template, copy-assessment, blank)
   - Integration testing with existing survey system and organizational assessment architecture
+- **Department-Based Access Control Tests**: 40+ comprehensive tests covering:
+  - **Access Control Tests** (11 tests): Department-embedded code generation, parsing, validation, and legacy compatibility
+  - **Department Integration Tests** (7 tests): End-to-end workflow validation, multi-dimensional analytics, response aggregation, and perception gap analysis
+  - **DepartmentConfig UI Tests** (11 tests): Component interactions, form validation, code generation, and user experience flows
+  - **Department Features Tests** (13 tests): Code formatting, special character handling, case sensitivity, and error conditions
 - **GDPR Compliance Tests**: 67 comprehensive privacy tests covering:
   - Data classification and legal basis validation
   - Privacy configuration and data minimization compliance
@@ -364,7 +369,7 @@ The platform now includes:
   - Joint controller agreements and data processing agreements
   - Assessment-specific privacy information generation
   - Privacy notice URL routing and accessibility
-- Tests run with Jest + Testing Library + jsdom with 96%+ coverage across all question management functionality
+- Tests run with Jest + Testing Library + jsdom with 96%+ coverage across all functionality
 
 ## Development Notes
 

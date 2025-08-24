@@ -4,15 +4,18 @@ import { ParticipantResponse, SliderValue } from './types'
 export function createDemoAssessment() {
   const assessmentManager = new OrganizationalAssessmentManager()
   
-  // Check if demo already exists and has correct status
+  // Check if demo already exists
   const existing = assessmentManager.getAssessment('demo-org')
-  if (existing && existing.status === 'collecting') {
+  if (existing) {
     return existing
   }
   
-  // If demo exists but has wrong status, recreate it
-  if (existing) {
-    // Recreate demo with correct status
+  // Check if demo was intentionally deleted (don't recreate if user deleted it)
+  if (typeof window !== 'undefined') {
+    const demoDeleted = localStorage.getItem('demo-assessment-deleted')
+    if (demoDeleted === 'true') {
+      return null
+    }
   }
 
   // Create demo assessment with fixed ID
@@ -171,8 +174,13 @@ export function fixDemoAssessmentStatus() {
   }
 }
 
-// Auto-initialize demo data if it doesn't exist
-if (typeof window !== 'undefined') {
-  createDemoAssessment()
-  fixDemoAssessmentStatus()
+// Restore demo assessment (useful for testing)
+export function restoreDemoAssessment() {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('demo-assessment-deleted')
+  }
+  return createDemoAssessment()
 }
+
+// Demo data initialization is now controlled by consultant dashboard
+// No auto-initialization to allow demo assessment to be deleted

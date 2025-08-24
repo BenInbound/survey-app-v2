@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getAllSurveyData, clearAllSurveyData } from '@/lib/survey-logic'
 import { ParticipantSession } from '@/lib/types'
+import { restoreDemoAssessment } from '@/lib/demo-data'
 import Logo from '@/components/ui/Logo'
 // import AuthGuard from '@/components/ui/ConsultantAuthGuard'
 
@@ -25,6 +26,16 @@ export default function AdminPage() {
     clearAllSurveyData()
     setSessions([])
     setShowConfirmClear(false)
+  }
+
+  const handleRestoreDemo = () => {
+    try {
+      restoreDemoAssessment()
+      alert('Demo assessment restored successfully! Visit the consultant dashboard to see it.')
+    } catch (error) {
+      console.error('Error restoring demo assessment:', error)
+      alert('Failed to restore demo assessment. Please try again.')
+    }
   }
 
   const formatDate = (date: Date) => {
@@ -115,6 +126,14 @@ export default function AdminPage() {
             >
               Test Survey
             </a>
+
+            <button
+              onClick={handleRestoreDemo}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              title="Restore the Demo Organization assessment if it was deleted"
+            >
+              Restore Demo Assessment
+            </button>
           </div>
         </div>
 

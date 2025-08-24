@@ -27,9 +27,17 @@ export default function ConsultantDashboard() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAssessments = () => {
-    // Ensure demo assessment exists and has correct status
-    createDemoAssessment()
-    fixDemoAssessmentStatus()
+    // Only create demo assessment if no assessments exist at all
+    const existingAssessments = assessmentManager.getAllAssessments()
+    if (existingAssessments.length === 0) {
+      createDemoAssessment()
+    } else {
+      // If demo exists, just fix its status, don't recreate it
+      const demoExists = existingAssessments.some(a => a.id === 'demo-org')
+      if (demoExists) {
+        fixDemoAssessmentStatus()
+      }
+    }
     
     const allAssessments = assessmentManager.getAllAssessments()
     setAssessments(allAssessments)
@@ -68,6 +76,28 @@ export default function ConsultantDashboard() {
       alert('Access code regenerated successfully!')
     } catch (error) {
       alert('Failed to regenerate access code. Please try again.')
+    }
+  }
+
+  const handleDeleteAssessment = (assessmentId: string, organizationName: string) => {
+    const isConfirmed = confirm(
+      `Are you sure you want to delete the assessment for "${organizationName}"?\n\nThis will permanently delete:\n- The assessment configuration\n- All participant responses\n- All collected data\n\nThis action cannot be undone.`
+    )
+    
+    if (isConfirmed) {
+      try {
+        // If deleting the demo assessment, set a flag to prevent recreation
+        if (assessmentId === 'demo-org') {
+          localStorage.setItem('demo-assessment-deleted', 'true')
+        }
+        
+        assessmentManager.deleteAssessment(assessmentId)
+        loadAssessments()
+        alert('Assessment deleted successfully!')
+      } catch (error) {
+        console.error('Error deleting assessment:', error)
+        alert('Failed to delete assessment. Please try again.')
+      }
     }
   }
 
@@ -336,12 +366,24 @@ export default function ConsultantDashboard() {
                         Lock
                       </button>
                     </div>
-                    <button
-                      onClick={() => setQuestionManagerAssessmentId(assessment.id)}
-                      className="bg-rose-600 text-white px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors text-sm font-medium"
-                    >
-                      Manage Questions
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setQuestionManagerAssessmentId(assessment.id)}
+                        className="bg-rose-600 text-white px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors text-sm font-medium"
+                      >
+                        📝 Manage Questions
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAssessment(assessment.id, assessment.organizationName)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium flex items-center gap-1"
+                        title={`Delete ${assessment.organizationName} assessment`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

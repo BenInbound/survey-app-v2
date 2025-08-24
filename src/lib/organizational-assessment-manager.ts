@@ -450,6 +450,21 @@ export class OrganizationalAssessmentManager {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   }
 
+  // Delete assessment and all related data
+  deleteAssessment(assessmentId: string): void {
+    if (typeof window === 'undefined') return
+
+    // Remove assessment from assessments array
+    const assessments = this.getAllAssessments()
+    const filteredAssessments = assessments.filter(a => a.id !== assessmentId)
+    this.saveAllAssessments(filteredAssessments)
+
+    // Remove all related participant responses
+    const responses = this.getAllResponses()
+    const filteredResponses = responses.filter(r => r.assessmentId !== assessmentId)
+    this.saveAllResponses(filteredResponses)
+  }
+
   // Utility methods for development/testing
   clearAllAssessments(): void {
     if (typeof window === 'undefined') return
