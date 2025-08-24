@@ -14,6 +14,8 @@ export default function ConsultantDashboard() {
   const [assessments, setAssessments] = useState<OrganizationalAssessment[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [questionManagerAssessmentId, setQuestionManagerAssessmentId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [newAssessment, setNewAssessment] = useState({
     organizationName: '',
     consultantId: 'guro@inbound.com', // Default for demo
@@ -26,21 +28,34 @@ export default function ConsultantDashboard() {
     loadAssessments()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadAssessments = () => {
-    // Only create demo assessment if no assessments exist at all
-    const existingAssessments = assessmentManager.getAllAssessments()
-    if (existingAssessments.length === 0) {
-      createDemoAssessment()
-    } else {
-      // If demo exists, just fix its status, don't recreate it
-      const demoExists = existingAssessments.some(a => a.id === 'demo-org')
-      if (demoExists) {
-        // Demo assessment will be properly configured with new createDemoAssessment() format
+  const loadAssessments = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      // Try loading from database first, then localStorage as fallback
+      const existingAssessments = await assessmentManager.getAllAssessmentsWithDatabase()
+      
+      // Only create demo assessment if no assessments exist at all
+      if (existingAssessments.length === 0) {
+        createDemoAssessment()
+        // Reload after creating demo
+        const refreshedAssessments = await assessmentManager.getAllAssessmentsWithDatabase()
+        setAssessments(refreshedAssessments)
+      } else {
+        // If demo exists, just fix its status, don't recreate it
+        const demoExists = existingAssessments.some(a => a.id === 'demo-org')
+        if (demoExists) {
+          // Demo assessment will be properly configured with new createDemoAssessment() format
+        }
+        setAssessments(existingAssessments)
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load assessments')
+      console.error('Assessment loading error:', err)
+    } finally {
+      setIsLoading(false)
     }
-    
-    const allAssessments = assessmentManager.getAllAssessments()
-    setAssessments(allAssessments)
   }
 
   const handleCreateAssessment = () => {
@@ -63,7 +78,7 @@ export default function ConsultantDashboard() {
     }
   }
 
-  const handleCloseSurvey = (assessmentId: string, organizationName: string) => {
+  const handleCloseSurvey = async (assessmentId: string, organizationName: string) => {
     const isConfirmed = confirm(
       `Close survey for "${organizationName}"?\n\nThis will:\n- Stop accepting new responses\n- Expire access codes\n- Lock the assessment for analysis\n\nYou can still view results, but participants cannot submit new responses.`
     )
@@ -71,7 +86,7 @@ export default function ConsultantDashboard() {
     if (isConfirmed) {
       try {
         assessmentManager.updateAssessmentStatus(assessmentId, 'locked')
-        loadAssessments()
+        await loadAssessments()
         alert('Survey closed successfully!')
       } catch (error) {
         console.error('Error closing survey:', error)
@@ -80,10 +95,10 @@ export default function ConsultantDashboard() {
     }
   }
 
-  const handleRegenerateCode = (assessmentId: string) => {
+  const handleRegenerateCode = async (assessmentId: string) => {
     try {
       assessmentManager.regenerateAccessCode(assessmentId)
-      loadAssessments()
+      await loadAssessments()
       // Show success feedback
       alert('Access code regenerated successfully!')
     } catch (error) {
@@ -91,7 +106,7 @@ export default function ConsultantDashboard() {
     }
   }
 
-  const handleDeleteAssessment = (assessmentId: string, organizationName: string) => {
+  const handleDeleteAssessment = async (assessmentId: string, organizationName: string) => {
     const isConfirmed = confirm(
       `Are you sure you want to delete the assessment for "${organizationName}"?\n\nThis will permanently delete:\n- The assessment configuration\n- All participant responses\n- All collected data\n\nThis action cannot be undone.`
     )
@@ -104,7 +119,7 @@ export default function ConsultantDashboard() {
         }
         
         assessmentManager.deleteAssessment(assessmentId)
-        loadAssessments()
+        await loadAssessments()
         alert('Assessment deleted successfully!')
       } catch (error) {
         console.error('Error deleting assessment:', error)
@@ -265,11 +280,43 @@ export default function ConsultantDashboard() {
           </div>
         )}
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="mt-4 text-neutral-600">Loading assessments from database...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-error bg-opacity-10 border border-error border-opacity-20 rounded-lg p-4 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-error text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                !
+              </div>
+              <div>
+                <p className="font-semibold text-error">Error Loading Assessments</p>
+                <p className="text-sm text-neutral-600 mt-1">{error}</p>
+                <button 
+                  onClick={() => loadAssessments()}
+                  className="text-sm text-error hover:text-error/80 underline mt-2"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Assessments List */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-neutral-900 mb-6">
-            Active Assessments ({assessments.length})
-          </h2>
+        {!isLoading && !error && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-neutral-900 mb-6">
+              Active Assessments ({assessments.length})
+            </h2>
           
           {assessments.length === 0 ? (
             <div className="bg-white rounded-xl shadow-lg text-center py-12">
@@ -396,7 +443,8 @@ export default function ConsultantDashboard() {
               ))}
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
       </div>
     </AuthGuard>

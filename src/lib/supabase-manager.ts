@@ -363,6 +363,254 @@ export class SupabaseManager {
     }
   }
 
+  /**
+   * Fix department ID truncation issues in responses
+   * This repairs data where department codes were truncated from 8 chars to 3 chars
+   */
+  async repairDepartmentTruncationIssues(assessmentId: string): Promise<{ repaired: boolean, fixed: number, errors: string[] }> {
+    if (!supabase) {
+      return { repaired: false, fixed: 0, errors: ['Supabase not configured'] }
+    }
+
+    const errors: string[] = []
+    let fixedCount = 0
+
+    try {
+      // Load assessment to get correct department mappings
+      const assessment = await this.loadAssessment(assessmentId)
+      if (!assessment || !assessment.departments) {
+        return { repaired: false, fixed: 0, errors: ['Assessment not found or has no departments'] }
+      }
+
+      // Create mapping from truncated codes to full department IDs
+      const departmentMapping = new Map<string, string>()
+      assessment.departments.forEach(dept => {
+        const truncated = dept.id.substring(0, 3).toUpperCase()
+        departmentMapping.set(truncated, dept.id)
+        // Also map common corrupted values
+        departmentMapping.set('SAL', 'sales')
+        departmentMapping.set('MAR', 'marketing') 
+        departmentMapping.set('ENG', 'engineering')
+        departmentMapping.set('HR', 'hr')
+        departmentMapping.set('FIN', 'finance')
+      })
+
+      // Load all responses for this assessment
+      const responses = await this.loadParticipantResponses(assessmentId)
+      
+      for (const response of responses) {
+        // Check if department ID looks truncated (3 chars or less, or is a role name)
+        const needsRepair = response.department.length <= 3 || 
+                           ['Management', 'Employee', 'General'].includes(response.department) ||
+                           departmentMapping.has(response.department.toUpperCase())
+        
+        if (needsRepair) {
+          let correctedDepartment = response.department
+          
+          // Try to map truncated code to full department
+          const mapped = departmentMapping.get(response.department.toUpperCase())
+          if (mapped) {
+            correctedDepartment = mapped
+          } else {
+            // For role-based corruption, try to infer from other responses
+            const otherResponses = responses.filter(r => 
+              r.participantId !== response.participantId && 
+              !['Management', 'Employee', 'General'].includes(r.department) &&
+              r.department.length > 3
+            )
+            
+            if (otherResponses.length > 0) {
+              // Use most common department as fallback
+              const deptCounts = otherResponses.reduce((acc, r) => {
+                acc[r.department] = (acc[r.department] || 0) + 1
+                return acc
+              }, {} as Record<string, number>)
+              
+              const mostCommon = Object.entries(deptCounts).sort(([,a], [,b]) => b - a)[0]
+              if (mostCommon) {
+                correctedDepartment = mostCommon[0]
+              }
+            }
+          }
+
+          // Update the response in database
+          if (correctedDepartment !== response.department) {
+            const { error } = await supabase
+              .from('participant_responses')
+              .update({ department: correctedDepartment })
+              .eq('assessment_id', assessmentId)
+              .eq('participant_id', response.participantId)
+            
+            if (error) {
+              errors.push(`Failed to update response ${response.participantId}: ${error.message}`)
+            } else {
+              console.log(`Fixed department ID: ${response.department} → ${correctedDepartment} for participant ${response.participantId}`)
+              fixedCount++
+            }
+          }
+        }
+      }
+
+      return { repaired: fixedCount > 0, fixed: fixedCount, errors }
+      
+    } catch (err) {
+      errors.push(`Repair operation failed: ${err}`)
+      return { repaired: false, fixed: fixedCount, errors }
+    }
+  }
+
+  /**
+   * Comprehensive data migration utility that fixes all known issues
+   */
+  async comprehensiveDataMigration(assessmentId: string): Promise<{ 
+    success: boolean, 
+    operations: { name: string, success: boolean, details: string }[],
+    summary: string 
+  }> {
+    const operations = []
+    let overallSuccess = true
+
+    // 1. Diagnose issues first
+    operations.push({ name: 'Diagnosis', success: true, details: 'Starting comprehensive migration' })
+    const diagnosis = await this.diagnoseDatabaseIssues(assessmentId)
+    
+    if (diagnosis.corruption?.error) {
+      operations.push({ 
+        name: 'Diagnosis', 
+        success: false, 
+        details: `Failed to diagnose: ${diagnosis.corruption.error}` 
+      })
+      overallSuccess = false
+    } else {
+      operations.push({ 
+        name: 'Diagnosis', 
+        success: true, 
+        details: `Found ${diagnosis.corruption?.corruptedCount || 0} corrupted responses` 
+      })
+    }
+
+    // 2. Repair department truncation issues
+    const repairResult = await this.repairDepartmentTruncationIssues(assessmentId)
+    operations.push({
+      name: 'Department Repair',
+      success: repairResult.repaired || repairResult.errors.length === 0,
+      details: `Fixed ${repairResult.fixed} responses. Errors: ${repairResult.errors.join(', ') || 'None'}`
+    })
+    
+    if (repairResult.errors.length > 0) {
+      overallSuccess = false
+    }
+
+    // 3. Clean any remaining corrupted data if repair failed
+    if (!repairResult.repaired && diagnosis.corruption?.corruptedCount > 0) {
+      const cleanResult = await this.cleanCorruptedDepartmentData(assessmentId)
+      operations.push({
+        name: 'Data Cleanup',
+        success: cleanResult.cleaned,
+        details: cleanResult.cleaned ? 'Cleaned corrupted data' : `Cleanup failed: ${cleanResult.errors.join(', ')}`
+      })
+      
+      if (!cleanResult.cleaned) {
+        overallSuccess = false
+      }
+    }
+
+    // 4. Final verification
+    const finalDiagnosis = await this.diagnoseDatabaseIssues(assessmentId)
+    operations.push({
+      name: 'Verification',
+      success: (finalDiagnosis.corruption?.corruptedCount || 0) === 0,
+      details: `Final state: ${finalDiagnosis.corruption?.corruptedCount || 0} corrupted responses remaining`
+    })
+
+    const summary = overallSuccess 
+      ? `Migration completed successfully. Fixed ${repairResult.fixed} responses.`
+      : `Migration completed with errors. Check operation details.`
+
+    return { success: overallSuccess, operations, summary }
+  }
+
+  /**
+   * Repair localStorage data that has department truncation issues
+   */
+  repairLocalStorageData(): { repaired: number, errors: string[] } {
+    if (typeof window === 'undefined') {
+      return { repaired: 0, errors: ['Not in browser environment'] }
+    }
+
+    const errors: string[] = []
+    let repairedCount = 0
+
+    try {
+      // Repair assessment data
+      const assessmentsData = localStorage.getItem('organizational-assessments')
+      if (assessmentsData) {
+        const assessments = JSON.parse(assessmentsData) as OrganizationalAssessment[]
+        let modified = false
+        
+        assessments.forEach(assessment => {
+          if (assessment.departments) {
+            assessment.departments.forEach(dept => {
+              // Fix truncated department IDs in department configs
+              if (dept.id.length <= 3 && dept.name.length > 3) {
+                const newId = dept.name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 8)
+                console.log(`Fixing department ID: ${dept.id} → ${newId}`)
+                dept.id = newId
+                modified = true
+                repairedCount++
+              }
+            })
+          }
+        })
+        
+        if (modified) {
+          localStorage.setItem('organizational-assessments', JSON.stringify(assessments))
+        }
+      }
+
+      // Repair response data
+      const responsesData = localStorage.getItem('organizational-responses')
+      if (responsesData) {
+        const responses = JSON.parse(responsesData) as ParticipantResponse[]
+        let modified = false
+        
+        responses.forEach(response => {
+          // Fix truncated or corrupted department IDs in responses
+          if (response.department.length <= 3 || ['Management', 'Employee', 'General'].includes(response.department)) {
+            // Try common mappings
+            const mapping: Record<string, string> = {
+              'SAL': 'sales',
+              'MAR': 'marketing',
+              'ENG': 'engineering', 
+              'HR': 'hr',
+              'FIN': 'finance',
+              'Management': 'sales', // Fallback
+              'Employee': 'sales',   // Fallback
+              'General': 'sales'     // Fallback
+            }
+            
+            const mapped = mapping[response.department.toUpperCase()]
+            if (mapped) {
+              console.log(`Fixing response department: ${response.department} → ${mapped}`)
+              response.department = mapped
+              modified = true
+              repairedCount++
+            }
+          }
+        })
+        
+        if (modified) {
+          localStorage.setItem('organizational-responses', JSON.stringify(responses))
+        }
+      }
+
+    } catch (err) {
+      errors.push(`localStorage repair failed: ${err}`)
+    }
+
+    return { repaired: repairedCount, errors }
+  }
+
   private mapDatabaseToResponse(data: any): ParticipantResponse {
     return {
       assessmentId: data.assessment_id,
@@ -408,3 +656,40 @@ export class SupabaseManager {
 }
 
 export const supabaseManager = new SupabaseManager()
+
+/**
+ * Quick migration utility for fixing department truncation issues
+ * Can be called from admin panel or console
+ */
+export async function fixDepartmentTruncationIssues(assessmentId?: string) {
+  console.log('🔧 Starting department truncation repair...')
+  
+  // Fix localStorage first
+  const localRepair = supabaseManager.repairLocalStorageData()
+  console.log(`📱 localStorage: Fixed ${localRepair.repaired} items. Errors: ${localRepair.errors.join(', ') || 'None'}`)
+  
+  if (assessmentId) {
+    // Fix specific assessment in database
+    const migration = await supabaseManager.comprehensiveDataMigration(assessmentId)
+    console.log(`🗄️  Database migration for ${assessmentId}:`, migration.summary)
+    migration.operations.forEach(op => {
+      console.log(`  ${op.success ? '✅' : '❌'} ${op.name}: ${op.details}`)
+    })
+    return migration
+  } else {
+    // Fix all assessments
+    console.log('🔍 Scanning all assessments for issues...')
+    const allAssessments = await supabaseManager.loadAllAssessments()
+    
+    for (const assessment of allAssessments) {
+      const migration = await supabaseManager.comprehensiveDataMigration(assessment.id)
+      if (!migration.success) {
+        console.log(`⚠️  Issues with ${assessment.organizationName} (${assessment.id}):`, migration.summary)
+      } else {
+        console.log(`✅ ${assessment.organizationName} (${assessment.id}): ${migration.summary}`)
+      }
+    }
+  }
+  
+  console.log('🎉 Department truncation repair completed!')
+}

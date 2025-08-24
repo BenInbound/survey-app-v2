@@ -18,6 +18,7 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
   const [comparativeAnalysis, setComparativeAnalysis] = useState<ComparativeAnalysis | null>(null)
   const [aiInsights, setAiInsights] = useState<string | null>(null)
   const [isLoadingInsights, setIsLoadingInsights] = useState(false)
+  const [isLoadingAssessment, setIsLoadingAssessment] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const assessmentManager = new OrganizationalAssessmentManager()
@@ -26,17 +27,21 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
     loadAssessmentData()
   }, [assessmentId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadAssessmentData = () => {
+  const loadAssessmentData = async () => {
     try {
+      setIsLoadingAssessment(true)
+      setError(null)
+
       // Ensure demo assessment exists if this is the demo
       if (assessmentId === 'demo-org') {
         // Force refresh demo data to fix any data structure issues
         refreshDemoAssessment()
       }
       
-      const assessmentData = assessmentManager.getAssessment(assessmentId)
+      // Try loading from database first, then localStorage as fallback
+      const assessmentData = await assessmentManager.getAssessmentWithDatabase(assessmentId)
       if (!assessmentData) {
-        setError('Assessment not found')
+        setError('Assessment not found in database or local storage')
         return
       }
 
@@ -48,6 +53,9 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load assessment')
+      console.error('Assessment loading error:', err)
+    } finally {
+      setIsLoadingAssessment(false)
     }
   }
 
@@ -187,12 +195,14 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
     )
   }
 
-  if (!assessment || !comparativeAnalysis) {
+  if (isLoadingAssessment || !assessment || !comparativeAnalysis) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-neutral-600">Loading assessment results...</p>
+          <p className="mt-4 text-neutral-600">
+            {isLoadingAssessment ? 'Loading assessment from database...' : 'Loading assessment results...'}
+          </p>
         </div>
       </div>
     )
