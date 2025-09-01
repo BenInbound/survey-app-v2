@@ -200,7 +200,7 @@ export class OrganizationalAssessmentManager {
     }
   }
 
-  private async updateAggregatedData(assessmentId: string): Promise<void> {
+  async updateAggregatedData(assessmentId: string): Promise<void> {
     console.log('🔄 Updating aggregated data for assessment:', assessmentId)
     
     try {
@@ -213,11 +213,13 @@ export class OrganizationalAssessmentManager {
       const managementResponses = await this.getParticipantResponses(assessmentId, 'management')
       const employeeResponses = await this.getParticipantResponses(assessmentId, 'employee')
 
-      console.log('📊 Response counts:', {
+      console.log('📊 Response counts for', assessmentId, ':', {
         management: managementResponses.length,
         employee: employeeResponses.length,
         managementDepartments: managementResponses.map(r => r.department),
-        employeeDepartments: employeeResponses.map(r => r.department)
+        employeeDepartments: employeeResponses.map(r => r.department),
+        managementIds: managementResponses.map(r => r.participantId),
+        employeeIds: employeeResponses.map(r => r.participantId)
       })
 
       // Update aggregated data
@@ -232,10 +234,26 @@ export class OrganizationalAssessmentManager {
 
       // Update department-specific aggregated data
       assessment.departmentData = await this.aggregateDepartmentData(assessmentId)
+      
+      console.log('📄 Department data before saving:', assessment.departmentData?.map(d => ({
+        dept: d.department,
+        mgmtAvg: d.managementResponses.overallAverage,
+        empAvg: d.employeeResponses.overallAverage,
+        mgmtCount: d.responseCount.management,
+        empCount: d.responseCount.employee
+      })))
 
       // Save updated assessment to database
       console.log('🔄 Saving updated assessment to database...')
-      await supabaseManager.saveAssessment(assessment)
+      const savedAssessment = await supabaseManager.saveAssessment(assessment)
+      
+      console.log('📄 Department data after saving:', savedAssessment.departmentData?.map(d => ({
+        dept: d.department,
+        mgmtAvg: d.managementResponses.overallAverage,
+        empAvg: d.employeeResponses.overallAverage,
+        mgmtCount: d.responseCount.management,
+        empCount: d.responseCount.employee
+      })))
     } catch (error) {
       console.error('Failed to update aggregated data:', error)
       throw error
@@ -258,6 +276,11 @@ export class OrganizationalAssessmentManager {
 
     responses.forEach(response => {
       response.responses.forEach(answer => {
+        // Skip null/skipped responses
+        if (answer.score === null || answer.score === undefined) {
+          return
+        }
+        
         // Get the question category from the assessment
         const questionId = answer.questionId
         const category = this.getQuestionCategory(questionId, assessmentId)
@@ -275,7 +298,7 @@ export class OrganizationalAssessmentManager {
 
     const categoryAverages: CategoryAverage[] = Object.entries(categoryData).map(([category, data]) => ({
       category,
-      average: data.sum / data.count,
+      average: data.count > 0 ? data.sum / data.count : 0,
       responses: data.count
     }))
 

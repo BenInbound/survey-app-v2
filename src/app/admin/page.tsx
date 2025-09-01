@@ -41,13 +41,24 @@ export default function AdminPage() {
     }
   }
 
-  const handleRefreshDemo = () => {
+  const handleRefreshDemo = async () => {
     try {
-      refreshDemoAssessment()
+      await refreshDemoAssessment()
       alert('Demo data refreshed successfully! This fixes any data structure issues.')
     } catch (error) {
       console.error('Error refreshing demo data:', error)
       alert('Failed to refresh demo data. Please try again.')
+    }
+  }
+
+  const handleClearDemoResponses = async () => {
+    try {
+      // Clear all participant responses for demo-org
+      await supabaseManager.clearParticipantResponses('demo-org')
+      alert('Demo responses cleared successfully! You can now take fresh surveys.')
+    } catch (error) {
+      console.error('Error clearing demo responses:', error)
+      alert('Failed to clear demo responses. Please try again.')
     }
   }
 
@@ -162,6 +173,14 @@ export default function AdminPage() {
               title="Force refresh demo data to fix data structure issues (like 0/10 scores)"
             >
               🔄 Refresh Demo Data
+            </button>
+
+            <button
+              onClick={handleClearDemoResponses}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+              title="Clear all participant responses for demo-org to start fresh"
+            >
+              🗑️ Clear Demo Responses
             </button>
           </div>
         </div>

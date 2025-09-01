@@ -201,6 +201,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const [assessment, setAssessment] = useState<any>(null)
   const [showLandingPage, setShowLandingPage] = useState(true)
   const [surveyStarted, setSurveyStarted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Initialize or load existing session
   useEffect(() => {
@@ -262,12 +263,23 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       // Initialize questions cache first
       await surveyManager.initializeQuestions()
       
-      // Generate session storage key that includes role
-      const sessionKey = `${assessmentId}-${role}-${Date.now().toString().slice(-6)}`
+      // Clear any existing session data to prevent conflicts
+      if (typeof window !== 'undefined') {
+        const storageKey = `survey-session-${assessmentId}`
+        localStorage.removeItem(storageKey)
+      }
+      
+      // Generate unique identifiers with more entropy
+      const timestamp = Date.now()
+      const randomSuffix = Math.random().toString(36).substring(2, 8)
+      const browserFingerprint = (typeof navigator !== 'undefined' && navigator.userAgent) 
+        ? navigator.userAgent.slice(-4) 
+        : Math.random().toString(36).substring(2, 4)
+      const sessionKey = `${assessmentId}-${role}-${timestamp}-${randomSuffix}`
 
       const participantSession = surveyManager.initializeSurvey(
         sessionKey,
-        `participant-${Date.now()}`,
+        `participant-${timestamp}-${randomSuffix}-${browserFingerprint}`,
         department || 'General'
       )
 
@@ -304,7 +316,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       
       // Check if survey is complete
       const isComplete = await surveyManager.isComplete(nextSession)
-      if (isComplete) {
+      if (isComplete && !isSubmitting) {
+        setIsSubmitting(true)
         // Save as ParticipantResponse for organizational assessment
         if (role) {
           const participantResponse: ParticipantResponse = {
@@ -332,6 +345,51 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save response')
+    }
+  }
+
+  const handleSkip = async () => {
+    if (!session) return
+
+    try {
+      // Save null response for skipped question
+      const updatedSession = surveyManager.saveResponse(session, null)
+      
+      // Navigate to next question
+      const nextSession = surveyManager.navigateToNext(updatedSession)
+      setSession(nextSession)
+      
+      // Check if survey is complete
+      const isComplete = await surveyManager.isComplete(nextSession)
+      if (isComplete && !isSubmitting) {
+        setIsSubmitting(true)
+        // Save as ParticipantResponse for organizational assessment
+        if (role) {
+          const participantResponse: ParticipantResponse = {
+            ...nextSession,
+            role,
+            assessmentId,
+            // Override department field with department from access code if available
+            department: department || nextSession.department
+          }
+          await assessmentManager.addParticipantResponse(assessmentId, participantResponse)
+        }
+        
+        // All participants go to thank you page - no results access
+        router.push(`/survey/complete?type=${role || 'employee'}`)
+        return
+      }
+      
+      // Load next question
+      const nextQuestion = surveyManager.getCurrentQuestion(nextSession)
+      setCurrentQuestion(nextQuestion)
+      
+      // Reset slider for next question
+      const nextResponse = surveyManager.getCurrentResponse(nextSession)
+      setCurrentValue(nextResponse)
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to skip question')
     }
   }
 
@@ -416,8 +474,9 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   }
 
   const progress = surveyManager.calculateProgress(session)
-  const canGoBack = session.currentQuestionIndex > 0
-  const canGoNext = currentValue !== null
+  const canGoBack = session.currentQuestionIndex > 0 && !isSubmitting
+  const canGoNext = currentValue !== null && !isSubmitting
+  const canSkip = !isSubmitting
 
   return (
     <div className="min-h-screen bg-custom-gray py-8">
@@ -480,10 +539,26 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             Previous
           </button>
 
-          <div className="text-center">
-            <span className="text-sm text-neutral-500">
-              {currentValue ? 'Click Next to continue' : 'Please select a rating'}
-            </span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleSkip}
+              disabled={!canSkip}
+              className={`
+                px-6 py-3 rounded-lg font-medium transition-colors border
+                ${canSkip 
+                  ? 'bg-white border-neutral-300 text-neutral-700 hover:bg-neutral-50' 
+                  : 'bg-neutral-100 border-neutral-200 text-neutral-400 cursor-not-allowed'
+                }
+              `}
+            >
+              Skip Question
+            </button>
+            
+            {currentValue && (
+              <span className="text-sm text-neutral-500">
+                Ready to continue
+              </span>
+            )}
           </div>
 
           <button

@@ -72,6 +72,14 @@ export class SupabaseManager {
     }
     
     try {
+      console.log('💾 Saving to database - ID:', assessment.id)
+      console.log('💾 Department data length:', assessment.departmentData?.length || 0)
+      console.log('💾 Department data sample:', assessment.departmentData?.map(d => ({
+        dept: d.department,
+        mgmtAvg: d.managementResponses?.overallAverage,
+        empAvg: d.employeeResponses?.overallAverage
+      })))
+      
       const databaseRecord = {
         id: assessment.id,
         organization_name: assessment.organizationName,
@@ -147,6 +155,32 @@ export class SupabaseManager {
   }
 
   /**
+   * Clear all participant responses for an assessment (admin function)
+   */
+  async clearParticipantResponses(assessmentId: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase not configured')
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('participant_responses')
+        .delete()
+        .eq('assessment_id', assessmentId)
+        
+      if (error) {
+        console.error('Error clearing responses:', error)
+        throw new Error(`Failed to clear responses: ${error.message}`)
+      }
+      
+      console.log(`Cleared all participant responses for assessment: ${assessmentId}`)
+    } catch (error) {
+      console.error('Error in clearParticipantResponses:', error)
+      throw error
+    }
+  }
+
+  /**
    * Get all participant responses, optionally filtered by assessment and role
    */
   async getParticipantResponses(assessmentId?: string, role?: ParticipantRole): Promise<ParticipantResponse[]> {
@@ -191,6 +225,29 @@ export class SupabaseManager {
     }
     
     try {
+      // First check if this participant already has a response
+      const { data: existing, error: checkError } = await supabase
+        .from('participant_responses')
+        .select('participant_id')
+        .eq('assessment_id', response.assessmentId)
+        .eq('participant_id', response.participantId)
+      
+      // Log the check for debugging
+      console.log('🔍 Checking for existing response:', {
+        assessmentId: response.assessmentId,
+        participantId: response.participantId,
+        existingCount: existing?.length || 0,
+        checkError: checkError?.message || 'no error'
+      })
+      
+      // If there's existing data, skip the insert
+      if (existing && existing.length > 0) {
+        console.log('⚠️ Participant response already exists, skipping duplicate save:', response.participantId)
+        return response // Return the response without saving again
+      }
+      
+      console.log('✅ No existing response found, proceeding with insert')
+      
       const databaseResponse = {
         assessment_id: response.assessmentId,
         participant_id: response.participantId,
@@ -206,12 +263,26 @@ export class SupabaseManager {
 
       const { data, error } = await supabase
         .from('participant_responses')
-        .upsert(databaseResponse)
+        .insert(databaseResponse)
         .select()
         .single()
 
       if (error) {
-        console.error('Error saving response:', error)
+        console.error('Error saving response:', {
+          error,
+          participantId: response.participantId,
+          assessmentId: response.assessmentId
+        })
+        // If it's a duplicate key error, try once more with a different ID
+        if (error.code === '23505') { // PostgreSQL unique violation
+          const newParticipantId = `${response.participantId}-retry-${Date.now()}`
+          console.log('Duplicate key detected, retrying with new ID:', newParticipantId)
+          const retryResponse = {
+            ...response,
+            participantId: newParticipantId
+          }
+          return await this.addParticipantResponse(retryResponse)
+        }
         throw new Error(`Failed to save response: ${error.message}`)
       }
 
@@ -226,6 +297,10 @@ export class SupabaseManager {
    * Transform database record to OrganizationalAssessment
    */
   private transformFromDatabase(data: any): OrganizationalAssessment {
+    console.log('🔄 Transform from database - ID:', data.id)
+    console.log('🔄 Department data length:', data.department_data?.length || 0)
+    console.log('🔄 Department data raw:', data.department_data)
+    
     return {
       id: data.id,
       organizationName: data.organization_name,

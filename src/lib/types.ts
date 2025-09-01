@@ -47,7 +47,7 @@ export interface SurveyStats {
   departmentBreakdown: Record<string, number>
 }
 
-export type SliderValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+export type SliderValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | null
 
 export interface QuestionFormData {
   text: string

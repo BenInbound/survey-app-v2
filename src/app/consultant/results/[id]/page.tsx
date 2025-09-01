@@ -37,7 +37,7 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
       // Ensure demo assessment exists if this is the demo
       if (assessmentId === 'demo-org') {
         // Force refresh demo data to fix any data structure issues
-        refreshDemoAssessment()
+        await refreshDemoAssessment()
       }
       
       // Load assessment from Supabase
@@ -67,55 +67,22 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
         responseCount: assessmentData.responseCount
       })
       
-      // FORCE RECALCULATION: If department data shows 0 scores but we have responses, recalculate
-      const hasZeroScores = assessmentData.departmentData?.some(d => 
-        d.managementResponses.overallAverage === 0 && d.employeeResponses.overallAverage === 0
-      )
+      // If department data is empty but we have responses, force recalculation
+      const hasEmptyDepartmentData = !assessmentData.departmentData || assessmentData.departmentData.length === 0
       const hasResponses = (assessmentData.responseCount?.management || 0) + (assessmentData.responseCount?.employee || 0) > 0
       
-      if (hasZeroScores && hasResponses) {
-        console.log('⚠️  PHANTOM DATA DETECTED: Dashboard shows responses but none exist in storage!')
-        console.log('🔄 FORCING DATA RECALCULATION - Zero scores but responses exist')
+      if (hasEmptyDepartmentData && hasResponses) {
+        console.log('⚠️ Empty department data detected, forcing recalculation')
         
-        // Check if responses are in database instead
-        try {
-          const dbResponses = await assessmentManager.getParticipantResponses(assessmentId)
-          console.log('🔍 DATABASE RESPONSES CHECK:', dbResponses?.map((r: any) => ({
-            assessmentId: r.assessmentId,
-            department: r.department,
-            role: r.role,
-            completed: !!r.completedAt,
-            responseCount: r.responses?.length || 0
-          })) || 'No database method found')
-        } catch (err) {
-          console.log('🔍 DATABASE CHECK ERROR:', err)
-        }
-        
-        // Get fresh assessment without cached department data
-        const freshAssessment = await assessmentManager.getAssessment(assessmentId)
-        if (freshAssessment) {
-          // FORCE CLEAR cached department data
-          freshAssessment.departmentData = []
-          freshAssessment.managementResponses = { categoryAverages: [], overallAverage: 0, responseCount: 0 }
-          freshAssessment.employeeResponses = { categoryAverages: [], overallAverage: 0, responseCount: 0 }
-          
-          console.log('🔄 CLEARED CACHE - Forcing complete recalculation')
-          // Force regenerate department data with new matching logic
-          await assessmentManager.saveAssessment(freshAssessment) // This triggers updateAggregatedData
-          const updatedAssessment = await assessmentManager.getAssessment(assessmentId)
-          if (updatedAssessment) {
-            console.log('🔄 RECALCULATED DATA:', updatedAssessment.departmentData?.map(d => ({
-              dept: d.department,
-              mgmtAvg: d.managementResponses.overallAverage,
-              empAvg: d.employeeResponses.overallAverage,
-              mgmtCount: d.responseCount.management,
-              empCount: d.responseCount.employee
-            })))
-            setAssessment(updatedAssessment)
-            const newAnalysis = generateComparativeAnalysis(updatedAssessment)
-            setComparativeAnalysis(newAnalysis)
-            return // Skip the original setAssessment below
-          }
+        // Simply trigger updateAggregatedData without clearing existing data
+        await assessmentManager.updateAggregatedData(assessmentId)
+        const updatedAssessment = await assessmentManager.getAssessment(assessmentId)
+        if (updatedAssessment) {
+          console.log('🔄 RECALCULATED DATA:', updatedAssessment.departmentData?.length || 0, 'departments')
+          setAssessment(updatedAssessment)
+          const newAnalysis = generateComparativeAnalysis(updatedAssessment)
+          setComparativeAnalysis(newAnalysis)
+          return
         }
       }
 

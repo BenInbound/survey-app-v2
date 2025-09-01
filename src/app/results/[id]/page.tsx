@@ -75,23 +75,29 @@ export default function ResultsPage({ params }: ResultsPageProps) {
       if (!responsesByCategory[question.category]) {
         responsesByCategory[question.category] = []
       }
-      responsesByCategory[question.category].push({
-        question: question.text,
-        score: response.score
-      })
+      // Skip null/skipped responses in results display
+      if (response.score !== null) {
+        responsesByCategory[question.category].push({
+          question: question.text,
+          score: response.score
+        })
+      }
     }
   })
 
   // Calculate category averages
   const categoryAverages = Object.entries(responsesByCategory).map(([category, responses]) => ({
     category,
-    average: Math.round((responses.reduce((sum, r) => sum + r.score, 0) / responses.length) * 10) / 10,
+    average: responses.length > 0 
+      ? Math.round((responses.reduce((sum, r) => sum + r.score, 0) / responses.length) * 10) / 10
+      : 0,
     responses: responses.length
   }))
 
-  const overallAverage = Math.round(
-    (session.responses.reduce((sum, r) => sum + r.score, 0) / session.responses.length) * 10
-  ) / 10
+  const validResponses = session.responses.filter(r => r.score !== null)
+  const overallAverage = validResponses.length > 0 
+    ? Math.round((validResponses.reduce((sum, r) => sum + (r.score as number), 0) / validResponses.length) * 10) / 10
+    : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
