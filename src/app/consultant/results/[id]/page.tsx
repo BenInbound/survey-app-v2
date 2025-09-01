@@ -6,6 +6,7 @@ import { OrganizationalAssessment, ComparativeAnalysis } from '@/lib/types'
 import { ComparativeSpiderChart } from '@/components/ui/ComparativeSpiderChart'
 import { generateOrganizationalSummary } from '@/lib/ai-summary'
 import { createDemoAssessment, refreshDemoAssessment } from '@/lib/demo-data'
+import { exportAssessmentData } from '@/lib/csv-exporter'
 import Logo from '@/components/ui/Logo'
 
 interface ConsultantResultsProps {
@@ -214,6 +215,17 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
     }
   }
 
+  const handleExportCSV = () => {
+    if (!assessment || !consultantInsights) return
+
+    try {
+      exportAssessmentData(assessment, consultantInsights)
+    } catch (err) {
+      console.error('Export failed:', err)
+      setError('Failed to export data. Please try again.')
+    }
+  }
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -282,6 +294,14 @@ export default function ConsultantResults({ params }: ConsultantResultsProps) {
               }`}>
                 {assessment.status}
               </span>
+              {hasData && consultantInsights && (
+                <button
+                  onClick={handleExportCSV}
+                  className="bg-success text-white px-4 py-2 rounded-lg hover:bg-success-700 transition-colors text-sm font-medium"
+                >
+                  Export CSV
+                </button>
+              )}
               <a
                 href="/consultant/dashboard"
                 className="bg-neutral-200 text-neutral-800 px-4 py-2 rounded-lg hover:bg-neutral-300 transition-colors text-sm font-medium"
